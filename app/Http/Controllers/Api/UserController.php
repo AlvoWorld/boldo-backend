@@ -1,0 +1,136 @@
+<?php
+   
+namespace App\Http\Controllers\Api;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Post;
+use App\Models\Pending;
+use App\Traits\ImageOperation;
+use DB;
+class UserController extends Controller
+{
+    use ImageOperation;
+
+    public function __construct()
+    {
+    }
+
+    public function register(Request $request){
+
+        // $photo = $request->photo64;
+        $name = $request->name;
+        $email = $request->email;
+        $bio = $request->bio;
+        $references = $request->references;
+        $styleOfCooking = $request->styleOfCooking;
+        $liquorServingCertification = $request->liquorServingCertification;
+        $company = $request->company;
+        $title = $request->title;
+        $years = $request->years;
+        $location = $request->location;
+        $typeOfProfessional = $request->typeOfProfessional;
+        $password = $request->password;
+        $professional = $request->professional;
+
+        $image=$this->uploadImage($request->get('photo64'),"logo", "user");
+
+        if(User::where('email', $email)->count() > 0)
+            return response()->json([
+                'success'=>true, 
+                "data"=>"exists"
+            ], 200);
+        
+        $user = new User;
+        $user->name = $name;
+        $user->email = $email;
+        $user->bio = $bio;
+        $user->references = $references;
+        $user->styleOfCooking = $styleOfCooking;
+        $user->liquorServingCertification = $liquorServingCertification;
+        $user->company = $company;
+        $user->title = $title;
+        $user->years = $years;
+        $user->location = $location;
+        $user->typeOfProfessional = $typeOfProfessional;
+        $user->password = bcrypt($password);
+        $user->role = $professional;
+        $user->photo = url("/uploads/logo/".$image);
+        $user->save();
+
+        return response()->json([
+            'success'=>true, 
+            "data"=>''
+        ], 200);
+    }
+
+    public function login(Request $request){
+        $email = $request->email;
+        $password = $request->password;
+        $token = "";
+        if (Auth::attempt(['email' => $email, 'password' => $password])) {
+            $user = Auth::user();
+
+            $success['token'] =  $user->createToken($user->id)->accessToken;
+            $success['user'] =  $user;
+            
+            return response()->json([
+                'success'=>true, 
+                "data" => $success, 
+                'message'=>"login success"
+            ]);
+        }
+        return response()->json([
+            'success'=>false, 
+            'message'=>'Unauthorised'
+        ], 401);
+    }
+
+    public function uploadPost(Request $request){
+        $id = $request->input('id');
+        $image=$this->uploadImage($request->get('photo64'),"post", "post");
+        $image = url("/uploads/post/".$image);
+        $post = Post::create(['user_id' => $id , 'photo' => $image]);
+        return response()->json([
+            'success'=>true,
+            'data'=>$post 
+        ]);
+    }
+
+    public function getPosts(Request $request){
+        $id = $request->input('id');
+        $posts = Post::orderBy('id')->get();
+        foreach($posts as $post){
+            $post->user;
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$posts,
+        ]);
+    }
+
+    public function getPros(Request $request){
+        $user = User::find($request->input('id'));
+        $pendings = $user->pending;
+        $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->orderBy('id')->get();
+
+        $filteredUsers = array();
+
+        return response()->json([
+            'success'=>true,
+            'data'=>$users,
+            'pendings'=>$pendings,
+        ]);
+    }
+
+    public function sendConnect(Request $request){
+        $id = $request->input('id');
+        $user_id = $request->input('user_id');
+        $pending = Pending::create(['user_id' => $id , 'connect_id'=>$user_id, 'state'=>0]);
+        return response()->json([
+            'success'=>true,
+            'pending'=>$pending
+        ]);
+    }
+}
