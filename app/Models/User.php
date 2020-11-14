@@ -51,4 +51,9 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Pending');
     }
+
+    public function pendingUser()
+    {
+        return $this->hasMany('App\Models\Pending');
+    }
 }

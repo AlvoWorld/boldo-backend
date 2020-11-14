@@ -18,4 +18,9 @@ class Pending extends Model
     {
         return $this->belongsTo('App\Models\User');
     }
+
+    public function userPending()
+    {
+        return $this->belongsTo('App\Models\User', 'connect_id');
+    }
 }

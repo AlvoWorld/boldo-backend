@@ -114,13 +114,21 @@ class UserController extends Controller
         $user = User::find($request->input('id'));
         $pendings = $user->pending;
         $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->orderBy('id')->get();
-
         $filteredUsers = array();
+        foreach($users as $user){
+            $bExist = false;
+            foreach($pendings as $pending){
+                if($pending->connect_id == $user->id)
+                    $bExist = true;
+            }
+
+            if(!$bExist)
+                array_push($filteredUsers, $user);
+        }
 
         return response()->json([
             'success'=>true,
-            'data'=>$users,
-            'pendings'=>$pendings,
+            'data'=>$filteredUsers,
         ]);
     }
 
@@ -131,6 +139,18 @@ class UserController extends Controller
         return response()->json([
             'success'=>true,
             'pending'=>$pending
+        ]);
+    }
+
+    public function getPendings(Request $request){
+        $id = $request->input('id');
+        $pendings = Pending::where([['user_id',  $id], ['state', 0]])->get();
+        foreach($pendings as $pending){
+            $pending->userPending;
+        }
+        return response()->json([
+            'success'=>true,
+            'pendings'=>$pendings
         ]);
     }
 }
