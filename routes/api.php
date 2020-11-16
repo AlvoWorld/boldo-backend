@@ -25,4 +25,5 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('get_pros', 'UserController@getPros' );
     Route::post('send_connect', 'UserController@sendConnect' );
     Route::post('get_pendings', 'UserController@getPendings' );
+    Route::post('upload_recipe', 'UserController@uploadRecipe' );
 });

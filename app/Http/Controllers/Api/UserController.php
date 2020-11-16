@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\Pending;
+use App\Models\Recipe;
 use App\Traits\ImageOperation;
 use DB;
 class UserController extends Controller
@@ -153,4 +154,24 @@ class UserController extends Controller
             'pendings'=>$pendings
         ]);
     }
+
+    public function uploadRecipe(Request $request){
+        $id = $request->input('id');
+        $title = $request->input('title');
+        $content = $request->input('content');
+
+        $recipe = new Recipe;
+        $recipe->user_id = $id;
+        $recipe->title = $title;
+        $recipe->content = $content;
+        $image=$this->uploadImage($request->get('photo64'),"recipe", "recipe");
+        $image = url("/uploads/recipe/".$image);
+        $recipe->photo = $image;
+        $recipe->save();
+
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+    
 }
