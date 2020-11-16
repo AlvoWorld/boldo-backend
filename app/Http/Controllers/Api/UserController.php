@@ -173,5 +173,30 @@ class UserController extends Controller
             'success'=>true,
         ]);
     }
+
+    public function getRecipes(Request $request){
+        $recipes = Recipe::get();
+        return response()->json([
+            'success'=>true,
+            'data'=>$recipes
+        ]);
+    }
     
+    public function getUserInfo(Request $request){
+
+        $id = $request->input('id');
+
+        $posts = Post::where('user_id', $id)->orderBy('id')->get();
+        $connections = Pending::where([['user_id', $id], ['state', 1]])->orderBy('id')->get();
+
+        foreach($connections as $connection){
+            $connection->userPending;
+        }
+
+        return response()->json([
+            'success'=>true,
+            'posts'=>$posts,
+            'users'=>$connections,
+        ]);
+    }
 }
