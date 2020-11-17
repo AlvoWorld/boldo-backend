@@ -28,4 +28,9 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('upload_recipe', 'UserController@uploadRecipe' );
     Route::post('get_recipes', 'UserController@getRecipes' );
     Route::post('get_user_info', 'UserController@getUserInfo' );
+    Route::post('remove_pending', 'UserController@removePending' );
+    Route::post('update_token', 'UserController@updateToken' );
+    Route::post('get_badge', 'UserController@getBadge');
+    Route::post('get_connections', 'UserController@getConnections');
+    Route::post('apply_pending', 'UserController@applyPending');
 });

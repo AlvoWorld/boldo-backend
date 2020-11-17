@@ -10,9 +10,13 @@ use App\Models\Pending;
 use App\Models\Recipe;
 use App\Traits\ImageOperation;
 use DB;
+use App\Traits\CommonHelper;
+
 class UserController extends Controller
 {
     use ImageOperation;
+    use CommonHelper;
+
 
     public function __construct()
     {
@@ -88,6 +92,19 @@ class UserController extends Controller
         ], 401);
     }
 
+    public function updateToken(Request $request){
+        $id = $request->input('id');
+        $device_token = $request->input('token');
+
+        $user = User::find($id);
+        $user->device_token = $device_token;
+        $user->save();
+
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
     public function uploadPost(Request $request){
         $id = $request->input('id');
         $image=$this->uploadImage($request->get('photo64'),"post", "post");
@@ -113,13 +130,15 @@ class UserController extends Controller
 
     public function getPros(Request $request){
         $user = User::find($request->input('id'));
-        $pendings = $user->pending;
+        $pendings = Pending::where('user_id', $user->id)->orWhere('connect_id', $user->id)->get();
         $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->orderBy('id')->get();
         $filteredUsers = array();
         foreach($users as $user){
             $bExist = false;
             foreach($pendings as $pending){
                 if($pending->connect_id == $user->id)
+                    $bExist = true;
+                else if($pending->user_id == $user->id)
                     $bExist = true;
             }
 
@@ -135,8 +154,32 @@ class UserController extends Controller
 
     public function sendConnect(Request $request){
         $id = $request->input('id');
+        $send_user = User::find($id);
         $user_id = $request->input('user_id');
         $pending = Pending::create(['user_id' => $id , 'connect_id'=>$user_id, 'state'=>0]);
+
+        $user = User::find($user_id);
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $device_token = $user->device_token;
+
+        $notification = array(
+            'title' => "New Connection Comming", 
+            'text' => "You received connection from ".$send_user->name
+        );
+
+        $fields = array(
+            'to' => $device_token,
+            'notification' => $notification
+        );
+
+        $headers = array(
+            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+            'Content-type: Application/json'
+        );
+
+        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+
+
         return response()->json([
             'success'=>true,
             'pending'=>$pending
@@ -187,16 +230,102 @@ class UserController extends Controller
         $id = $request->input('id');
 
         $posts = Post::where('user_id', $id)->orderBy('id')->get();
-        $connections = Pending::where([['user_id', $id], ['state', 1]])->orderBy('id')->get();
+        $connections = Pending::where([['connect_id', $id], ['state', 1]])->orderBy('id')->get();
 
         foreach($connections as $connection){
-            $connection->userPending;
+            $connection->user;
         }
 
         return response()->json([
             'success'=>true,
             'posts'=>$posts,
             'users'=>$connections,
+        ]);
+    }
+
+    public function removePending(Request $request){
+        $id = $request->input('id');
+
+        $pending = Pending::find($id);
+
+        $send_user = User::find($pending->user_id);
+        $connect_user = User::find($pending->connect_id);
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $device_token = $connect_user->device_token;
+
+        $notification = array(
+            'title' => "Connection canceled", 
+            'text' => "Your connection canceled by ".$send_user->name
+        );
+
+        $fields = array(
+            'to' => $device_token,
+            'notification' => $notification
+        );
+
+        $headers = array(
+            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+            'Content-type: Application/json'
+        );
+
+        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+        $pending->delete();
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+    public function applyPending(Request $request){
+        $id = $request->input('id');
+
+        $pending = Pending::find($id);
+        $pending->state = 1;
+        $pending->save();
+
+        $send_user = User::find($pending->user_id);
+        $connect_user = User::find($pending->connect_id);
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $device_token = $send_user->device_token;
+
+        $notification = array(
+            'title' => "Connection Accepted", 
+            'text' => "Your connection accepted by ".$connect_user->name
+        );
+
+        $fields = array(
+            'to' => $device_token,
+            'notification' => $notification
+        );
+
+        $headers = array(
+            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+            'Content-type: Application/json'
+        );
+
+        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+    public function getBadge(Request $request){
+        $id = $request->input('id');
+        $badge = Pending::where(['connect_id'=> $id, 'state'=>0])->count();
+        return response()->json([
+            'success'=>true,
+            'badge'=>$badge
+        ]);
+    }
+
+    public function getConnections(Request $request){
+        $id = $request->input('id');
+        $users = Pending::where(['connect_id'=> $id, 'state'=>0])->get();
+        foreach($users as $user){
+            $user->user;
+        }
+        return response()->json([
+            'success'=>true,
+            'users'=>$users
         ]);
     }
 }

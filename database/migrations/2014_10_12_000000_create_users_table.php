@@ -31,6 +31,7 @@ class CreateUsersTable extends Migration
             $table->text('typeOfProfessional')->nullable();
             $table->integer('role')->nullable();
             $table->string('etc')->nullable();
+            $table->string('device_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
