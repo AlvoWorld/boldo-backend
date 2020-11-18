@@ -228,18 +228,27 @@ class UserController extends Controller
     public function getUserInfo(Request $request){
 
         $id = $request->input('id');
-
         $posts = Post::where('user_id', $id)->orderBy('id')->get();
-        $connections = Pending::where([['connect_id', $id], ['state', 1]])->orderBy('id')->get();
+        $connections = Pending::where('state', 1)
+                                ->orderBy('id')->get();
 
+        $data = array();
         foreach($connections as $connection){
-            $connection->user;
+           if($connection->user_id == $id){
+               $user = User::find($connection->connect_id);
+           }else{
+            $user = User::find($connection->user_id);
+           }
+           if($connection->user_id == $id || $connection->connect_id == $id){
+               $connection->user = $user;
+               array_push($data, $connection);
+            }
         }
 
         return response()->json([
             'success'=>true,
             'posts'=>$posts,
-            'users'=>$connections,
+            'users'=>$data,
         ]);
     }
 
