@@ -20,7 +20,7 @@ class CreatePostsTable extends Migration
             $table->string('title')->nullable();
             $table->string('content')->nullable();
             $table->boolean('active')->nullable();
-            $table->integoer('count')->nullable();
+            $table->integer('count')->nullable();
             $table->integer('review_id')->nullable();
             $table->text('share')->nullable();
             $table->string('etc')->nullable();

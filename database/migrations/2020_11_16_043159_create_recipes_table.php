@@ -20,7 +20,7 @@ class CreateRecipesTable extends Migration
             $table->string('title')->nullable();
             $table->string('content')->nullable();
             $table->string('review')->nullable();
-            $table->integoer('count')->nullable();
+            $table->integer('count')->nullable();
             $table->string('etc')->nullable();
             $table->timestamps();
         });
