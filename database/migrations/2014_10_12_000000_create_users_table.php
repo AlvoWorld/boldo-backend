@@ -23,7 +23,7 @@ class CreateUsersTable extends Migration
             $table->string('bio')->nullable();
             $table->string('references')->nullable()->default("");
             $table->string('styleOfCooking')->nullable()->default("");
-            $table->string('liquorServingCertification')->nullable()->default("");
+            $table->string('liquorServingCertification')->nullable();
             $table->string('company')->nullable()->default("");
             $table->string('title')->nullable()->default("");
             $table->string('years')->nullable()->default("");
