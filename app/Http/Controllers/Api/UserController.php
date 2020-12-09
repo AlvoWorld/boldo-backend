@@ -64,13 +64,13 @@ class UserController extends Controller
         $user->role = $professional;
         $user->photo = url("/uploads/logo/".$image);
         $user_id = $user->save();
-
-        for($i = 0; $i < count($histories); $i ++){
-            $history = $histories[$i];
-            $history['user_id'] = $user_id;
-            History::create($history);
+        if($professional){
+            for($i = 0; $i < count($histories); $i ++){
+                $history = $histories[$i];
+                $history['user_id'] = $user_id;
+                History::create($history);
+            }
         }
-
         return response()->json([
             'success'=>true, 
             "data"=>''
