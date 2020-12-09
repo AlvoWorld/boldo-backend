@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\Pending;
+use App\Models\History;
 use App\Models\Recipe;
 use App\Traits\ImageOperation;
 use DB;
@@ -38,9 +39,9 @@ class UserController extends Controller
         $typeOfProfessional = $request->typeOfProfessional;
         $password = $request->password;
         $professional = $request->professional;
+        $histories = $request->histories;
 
         $image=$this->uploadImage($request->get('photo64'),"logo", "user");
-
         if(User::where('email', $email)->count() > 0)
             return response()->json([
                 'success'=>true, 
@@ -54,15 +55,21 @@ class UserController extends Controller
         $user->references = $references;
         $user->styleOfCooking = $styleOfCooking;
         $user->liquorServingCertification = $liquorServingCertification;
-        $user->company = $company;
-        $user->title = $title;
-        $user->years = $years;
+        $user->company = '';
+        $user->title = '';
+        $user->years = '';
         $user->location = $location;
         $user->typeOfProfessional = $typeOfProfessional;
         $user->password = bcrypt($password);
         $user->role = $professional;
         $user->photo = url("/uploads/logo/".$image);
-        $user->save();
+        $user_id = $user->save();
+
+        for($i = 0; $i < count($histories); $i ++){
+            $history = $histories[$i];
+            $history['user_id'] = $user_id;
+            History::create($history);
+        }
 
         return response()->json([
             'success'=>true, 
