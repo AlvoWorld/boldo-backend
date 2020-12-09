@@ -65,12 +65,10 @@ class UserController extends Controller
         $user->role = $professional;
         $user->photo = url("/uploads/logo/".$image);
         $user->save();
-        if($professional){
-            for($i = 0; $i < count($histories); $i ++){
-                $history = $histories[$i];
-                $history['user_id'] = $user->id;
-                History::create($history);
-            }
+        for($i = 0; $i < count($histories); $i ++){
+            $history = $histories[$i];
+            $history['user_id'] = $user->id;
+            History::create($history);
         }
         return response()->json([
             'success'=>true, 
@@ -413,12 +411,10 @@ class UserController extends Controller
         $user->save();
 
         History::where('user_id', $user->id)->delete();
-        if($professional){
-            for($i = 0; $i < count($histories); $i ++){
-                $history = $histories[$i];
-                $history['user_id'] = $user->id;
-                History::create($history);
-            }
+        for($i = 0; $i < count($histories); $i ++){
+            $history = $histories[$i];
+            $history['user_id'] = $user->id;
+            History::create($history);
         }
 
         return response()->json([
