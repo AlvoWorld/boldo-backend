@@ -33,4 +33,7 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('get_badge', 'UserController@getBadge');
     Route::post('get_connections', 'UserController@getConnections');
     Route::post('apply_pending', 'UserController@applyPending');
+    Route::post('view_recipe', 'UserController@viewRecipe');
+    Route::post('get_profile', 'UserController@getProfile');
+    Route::post('update_profile', 'UserController@updateProfile');
 });

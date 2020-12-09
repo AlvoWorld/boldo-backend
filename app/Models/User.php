@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Pending');
     }
+
+    public function histories()
+    {
+        return $this->hasMany('App\Models\History');
+    }
 }

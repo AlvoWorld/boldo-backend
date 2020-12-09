@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\Pending;
 use App\Models\History;
 use App\Models\Recipe;
+use App\Models\Review;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
@@ -63,11 +64,11 @@ class UserController extends Controller
         $user->password = bcrypt($password);
         $user->role = $professional;
         $user->photo = url("/uploads/logo/".$image);
-        $user_id = $user->save();
+        $user->save();
         if($professional){
             for($i = 0; $i < count($histories); $i ++){
                 $history = $histories[$i];
-                $history['user_id'] = $user_id;
+                $history['user_id'] = $user->id;
                 History::create($history);
             }
         }
@@ -225,10 +226,30 @@ class UserController extends Controller
     }
 
     public function getRecipes(Request $request){
-        $recipes = Recipe::get();
+        $recipes = Recipe::orderBy('count', 'desc')->orderBy('id', 'desc')->get();
+        foreach($recipes as $recipe){
+            $recipe->reviews;
+        }
         return response()->json([
             'success'=>true,
             'data'=>$recipes
+        ]);
+    }
+
+    public function viewRecipe(Request $request){
+        $form = $request->all();
+        $count = 1;
+        if(Review::where(['recipe_id' => $form['recipe_id'], 'user_id' => $form['user_id']])->get()->count() == 0){
+            $recipe = Recipe::find($form['recipe_id']);
+            if(!is_null($recipe->count))
+                $count =  $recipe->count + 1;
+            $recipe->count = $count;
+            $recipe->save();
+        }
+        $review = Review::updateOrCreate(['recipe_id' => $form['recipe_id'], 'user_id' => $form['user_id']], $form);
+        return response()->json([
+            'success'=>true,
+            'data'=>$review
         ]);
     }
     
@@ -263,7 +284,6 @@ class UserController extends Controller
         $id = $request->input('id');
 
         $pending = Pending::find($id);
-
         $send_user = User::find($pending->user_id);
         $connect_user = User::find($pending->connect_id);
         $url = 'https://fcm.googleapis.com/fcm/send';
@@ -342,6 +362,68 @@ class UserController extends Controller
         return response()->json([
             'success'=>true,
             'users'=>$users
+        ]);
+    }
+
+    public function getProfile(Request $request){
+        $id = $request->id;
+        $user = User::find($id);
+        $user ->histories;
+
+        return response()->json([
+            'success'=>true,
+            'data'=>$user
+        ]);
+    }
+
+    public function updateProfile(Request $request){
+        $id = $request->id;
+        $user = User::find($id);
+
+        $name = $request->name;
+        $email = $request->email;
+        $bio = $request->bio;
+        $references = $request->references;
+        $styleOfCooking = $request->styleOfCooking;
+        $liquorServingCertification = $request->liquorServingCertification;
+        $company = $request->company;
+        $title = $request->title;
+        $years = $request->years;
+        $location = $request->location;
+        $typeOfProfessional = $request->typeOfProfessional;
+        $password = $request->password;
+        $professional = $request->role;
+        $histories = $request->histories;
+        $image=$this->uploadImage($request->get('photo'),"logo", "user");
+        if($image != 'default.png'){
+            $user->photo = url("/uploads/logo/".$image);
+        }
+
+        $user->name = $name;
+        $user->bio = $bio;
+        $user->references = $references;
+        $user->styleOfCooking = $styleOfCooking;
+        $user->liquorServingCertification = $liquorServingCertification;
+        $user->company = '';
+        $user->title = '';
+        $user->years = '';
+        $user->location = $location;
+        $user->typeOfProfessional = $typeOfProfessional;
+        $user->role = $professional;
+        $user->save();
+
+        History::where('user_id', $user->id)->delete();
+        if($professional){
+            for($i = 0; $i < count($histories); $i ++){
+                $history = $histories[$i];
+                $history['user_id'] = $user->id;
+                History::create($history);
+            }
+        }
+
+        return response()->json([
+            'success'=>true,
+            'data'=>''
         ]);
     }
 }
