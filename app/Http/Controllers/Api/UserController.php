@@ -10,6 +10,7 @@ use App\Models\Pending;
 use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;
+use App\Models\Report;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
