@@ -36,4 +36,5 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('view_recipe', 'UserController@viewRecipe');
     Route::post('get_profile', 'UserController@getProfile');
     Route::post('update_profile', 'UserController@updateProfile');
+    Route::post('send_report', 'UserController@sendReport');
 });

@@ -423,4 +423,12 @@ class UserController extends Controller
             'data'=>''
         ]);
     }
+
+    public function sendReport(Request $request){
+        
+        return response()->json([
+            'success'=>true,
+            'data'=>''
+        ]);
+    }
 }
