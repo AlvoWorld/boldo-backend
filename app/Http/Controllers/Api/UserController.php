@@ -39,6 +39,7 @@ class UserController extends Controller
         $years = $request->years;
         $location = $request->location;
         $typeOfProfessional = $request->typeOfProfessional;
+        $typeOfProfessionalCustomer = $request->typeOfProfessionalCustomer;
         $password = $request->password;
         $professional = $request->professional;
         $histories = $request->histories;
@@ -61,9 +62,12 @@ class UserController extends Controller
         $user->title = '';
         $user->years = '';
         $user->location = $location;
-        $user->typeOfProfessional = $typeOfProfessional;
         $user->password = bcrypt($password);
         $user->role = $professional;
+        if(!$professional)
+            $user->typeOfProfessional = $typeOfProfessionalCustomer;
+        else
+            $user->typeOfProfessional = $typeOfProfessional;
         $user->photo = url("/uploads/logo/".$image);
         $user->save();
         for($i = 0; $i < count($histories); $i ++){
