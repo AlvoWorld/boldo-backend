@@ -17,6 +17,19 @@
         </b-card>
       </b-colxx>
     </b-row>
+
+    <b-modal id="modalProfile" ref="modalProfile" :title="$t('modal.modal-title')"
+       >
+        <b-row>
+            <b-colxx xxs="12">
+                <img :src="selectedUser.photo" alt="No Image" class="img-thumbnail border-0 rounded-circle list-thumbnail align-self-center xsmall">;
+            </b-colxx>
+        </b-row>
+        <template slot="modal-footer">
+            <b-button variant="primary" @click="somethingModal('modalbackdrop')" class="mr-1">Do Something</b-button>
+            <b-button variant="secondary" @click="hideModal('modalbackdrop')">Cancel</b-button>
+        </template>
+    </b-modal>
 </div>
 </template>
 
@@ -57,6 +70,30 @@ export default {
                     html: false,
                 },
                 {
+                    label: "Bio",
+                    field: "bio",
+                    numeric: false,
+                    html: false,
+                },
+                {
+                    label: "StyleOfCooking",
+                    field: "styleOfCooking",
+                    numeric: false,
+                    html: false,
+                },
+                {
+                    label: "TypeOfProfessional",
+                    field: "typeOfProfessional",
+                    numeric: false,
+                    html: false,
+                },
+                {
+                    label: "Location",
+                    field: "location",
+                    numeric: false,
+                    html: false,
+                },
+                {
                     label: "State",
                     field: "active",
                     numeric: false,
@@ -68,14 +105,8 @@ export default {
                     numeric: false,
                     html: true,
                 },
-                {
-                    label: "Profile",
-                    field: "profile",
-                    numeric: false,
-                    html: true,
-                },
             ],
-            selectedUser:{}
+            selectedUser:{},
         }
     },
 
@@ -112,10 +143,6 @@ export default {
 
                         temp = `<button class="btn btn-danger" target_id="${item.id}" action="delete">Delete</button>`;
                         this.$set(item, "delete", temp);
-
-                        temp = `<button class="btn btn-info" target_id="${item.id}" action="profile">view</button>`;
-                        this.$set(item, "profile", temp);
-
                     });
 
                     this.users = users;
@@ -154,7 +181,7 @@ export default {
                     })
                     .then((response) => {
                         if (response.data.success) {
-                            this.$notify("success", "Waiter deleted", "Waiter deleted", {
+                            this.$notify("success", "User deleted", "User deleted", {
                                 duration: 3000,
                                 permanent: false,
                             });
@@ -164,8 +191,50 @@ export default {
                     .catch((error) => {this.loading = false;});
 
                 }else if(action === 'activate'){
+                    const model = {
+                        user_id: id,
+                    };
 
-                }else if(action === 'profile'){
+                    let currentUser = null;
+                    this.users.forEach(user => {
+                        if(user.id == id){
+                            currentUser = user;
+                            return;
+                        }
+                    });
+
+                    let url = "admin/active_user";
+                    this.loading = true;
+                    webServices
+                    .post(url, JSON.stringify(model), {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${this.currentUser.token}`,
+                        },
+                    })
+                    .then((response) => {
+                        if (response.data.success) {
+                            this.$notify("success", "User activate status changed", "User activate status changed", {
+                                duration: 3000,
+                                permanent: false,
+                            });
+                            let user = response.data.data;
+                            let tableData = this.users;
+                            tableData.map((item) => {
+                                if (item.id == user.id){
+                                    let temp = "";
+                                    if (user.active)
+                                       temp = `<button class="btn btn-warning" target_id="${item.id}" action="activate">Deactivate</button>`
+                                    else
+                                        temp = `<button class="btn btn-success" target_id="${item.id}" action="activate">Activate</button>`;
+                                    this.$set(item, "active", temp);
+                                }
+                               
+                            });
+                            this.users = tableData;
+                        }
+                    })
+                    .catch((error) => {this.loading = false;});
 
                 }
             }

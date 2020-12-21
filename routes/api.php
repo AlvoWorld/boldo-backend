@@ -25,7 +25,14 @@ Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin'], function () {
     Route::get('get_users', 'AdminController@getUsers' );
-    Route::post('remove_user', 'AdminController@removeUser' );
+    Route::post('remove_user', 'AdminController@removeUser');
+    Route::post('active_user', 'AdminController@activeUser');
+    Route::get('get_posts', 'AdminController@getPosts');
+    Route::post('remove_post', 'AdminController@removePost');
+    Route::post('active_post', 'AdminController@activePost');
+    Route::get('get_recipes', 'AdminController@getRecipes');
+    Route::post('remove_recipe', 'AdminController@removeRecipe');
+    Route::post('active_recipe', 'AdminController@activeRecipe');
 });
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {

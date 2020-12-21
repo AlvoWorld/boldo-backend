@@ -13,4 +13,9 @@ class Recipe extends Model
     {
         return $this->hasMany('App\Models\Review');
     }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User');
+    }
 }

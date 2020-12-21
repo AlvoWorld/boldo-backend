@@ -129,7 +129,7 @@ class UserController extends Controller
 
     public function getPosts(Request $request){
         $id = $request->input('id');
-        $posts = Post::orderBy('id')->get();
+        $posts = Post::where('active', true)->orderBy('id')->get();
         foreach($posts as $post){
             $post->user;
         }
@@ -142,7 +142,7 @@ class UserController extends Controller
     public function getPros(Request $request){
         $user = User::find($request->input('id'));
         $pendings = Pending::where('user_id', $user->id)->orWhere('connect_id', $user->id)->get();
-        $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->orderBy('id')->get();
+        $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->where('active', true)->orderBy('id')->get();
         $filteredUsers = array();
         foreach($users as $user){
             $bExist = false;
@@ -229,7 +229,7 @@ class UserController extends Controller
     }
 
     public function getRecipes(Request $request){
-        $recipes = Recipe::orderBy('count', 'desc')->orderBy('id', 'desc')->get();
+        $recipes = Recipe::where('active', true)->orderBy('count', 'desc')->orderBy('id', 'desc')->get();
         foreach($recipes as $recipe){
             $recipe->reviews;
         }

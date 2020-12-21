@@ -47,6 +47,11 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Post');
     }
 
+    public function receipe()
+    {
+        return $this->hasMany('App\Models\Recipe');
+    }
+
     public function pending()
     {
         return $this->hasMany('App\Models\Pending');

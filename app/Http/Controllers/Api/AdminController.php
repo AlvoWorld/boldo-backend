@@ -76,9 +76,80 @@ class AdminController extends Controller
 
     public function removeUser(Request $request){
         $user_id = $request->user_id;
-        $users = User::find($user_id)->delete();
+        $user = User::find($user_id)->delete();
         return response()->json([
             'success'=>true, 
+        ]);
+    }
+
+    public function activeUser(Request $request){
+        $user_id = $request->user_id;
+        $user = User::find($user_id);
+        $user->active = !$user->active;
+        $user->save();
+        return response()->json([
+            'success'=>true, 
+            'data'=>$user
+        ]);
+    }
+
+    public function getPosts(Request $request){
+        $posts = Post::orderBy('id')->get();
+        foreach($posts as $post){
+            $post->user;
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$posts,
+        ]);
+    }
+
+    public function removePost(Request $request){
+        $post_id = $request->post_id;
+        $post = Post::find($post_id)->delete();
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    public function activePost(Request $request){
+        $post_id = $request->post_id;
+        $post = Post::find($post_id);
+        $post->active = !$post->active;
+        $post->save();
+        return response()->json([
+            'success'=>true, 
+            'data'=>$post
+        ]);
+    }
+
+    public function getRecipes(Request $request){
+        $receipes = Recipe::get();
+        foreach($receipes as $receipe){
+            $receipe->user;
+        }
+        return response()->json([
+            'success'=>true, 
+            'data'=>$receipes
+        ]);
+    }
+
+    public function removeRecipe(Request $request){
+        $recipe_id = $request->recipe_id;
+        $recipe = Recipe::find($recipe_id)->delete();
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    public function activeRecipe(Request $request){
+        $recipe_id = $request->recipe_id;
+        $recipe = Recipe::find($recipe_id);
+        $recipe->active = !$recipe->active;
+        $recipe->save();
+        return response()->json([
+            'success'=>true, 
+            'data'=>$recipe
         ]);
     }
 }
