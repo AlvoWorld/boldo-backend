@@ -68,8 +68,8 @@ export default {
     data() {
         return {
             form: {
-                email: "boldo@boldo.com",
-                password: "goodman"
+                email: "",
+                password: ""
             },
         };
     },
