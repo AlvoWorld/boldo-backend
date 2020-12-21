@@ -19,11 +19,11 @@ class CreatePostsTable extends Migration
             $table->string('photo')->nullable();
             $table->string('title')->nullable();
             $table->string('content')->nullable();
-            $table->boolean('active')->nullable();
             $table->integer('count')->nullable();
             $table->integer('review_id')->nullable();
             $table->text('share')->nullable();
             $table->string('etc')->nullable();
+            $table->boolean('active')->nullable()->default(true);
             $table->timestamps();
         });
     }

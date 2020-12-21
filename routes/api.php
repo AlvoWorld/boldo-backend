@@ -18,6 +18,15 @@ Route::Group(['namespace'=>'Api'],function (){
     Route::post('login', 'UserController@login' );
 });
 
+Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
+    Route::post('register', 'AdminController@register' );
+    Route::post('login', 'AdminController@login' );
+});
+
+Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin'], function () {
+    Route::get('get_users', 'AdminController@getUsers' );
+    Route::post('remove_user', 'AdminController@removeUser' );
+});
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('upload_post', 'UserController@uploadPost' );

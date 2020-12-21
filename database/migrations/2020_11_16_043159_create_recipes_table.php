@@ -21,6 +21,7 @@ class CreateRecipesTable extends Migration
             $table->text('content')->nullable();
             $table->string('review')->nullable();
             $table->integer('count')->nullable();
+            $table->boolean('active')->nullable()->default(true);
             $table->string('etc')->nullable();
             $table->timestamps();
         });

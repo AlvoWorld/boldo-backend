@@ -17,7 +17,6 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string('photo')->nullable();
             $table->string('bio')->nullable();
@@ -30,8 +29,10 @@ class CreateUsersTable extends Migration
             $table->string('location')->nullable()->default("");
             $table->text('typeOfProfessional')->nullable();
             $table->integer('role')->nullable();
-            $table->string('etc')->nullable()->default("");
             $table->string('device_token')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('active')->nullable()->default(true);
+            $table->string('etc')->nullable()->default("");
             $table->rememberToken();
             $table->timestamps();
         });
