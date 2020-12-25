@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::Group(['namespace'=>'Api'],function (){
     Route::post('register', 'UserController@register' );
     Route::post('login', 'UserController@login' );
+    Route::get('get_types', 'UserController@getTypes');
 });
 
 Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {

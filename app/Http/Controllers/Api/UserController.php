@@ -11,6 +11,7 @@ use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
+use App\Models\Type;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
@@ -23,6 +24,14 @@ class UserController extends Controller
 
     public function __construct()
     {
+    }
+
+    public function getTypes(Type $var = null){
+        $types = Type::select('id', 'name')->orderBy('sort')->get();
+        return response()->json([
+            'success'=>true, 
+            "data"=>$types
+        ], 200);
     }
 
     public function register(Request $request){
