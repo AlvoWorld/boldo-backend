@@ -12,6 +12,7 @@ use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
 use App\Models\Type;
+use App\Models\CookingStyle;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
@@ -26,18 +27,21 @@ class UserController extends Controller
     {
     }
 
-    public function getTypes(Type $var = null){
+    public function getFrontDatas(Type $var = null){
         $types = Type::select('id', 'name')->orderBy('sort')->get();
+        $styles = CookingStyle::select('id', 'name')->orderBy('sort')->get();
         return response()->json([
             'success'=>true, 
-            "data"=>$types
+            "types"=>$types,
+            "styles"=>$styles
         ], 200);
     }
 
     public function register(Request $request){
 
         // $photo = $request->photo64;
-        $name = $request->name;
+        $fname = $request->fname;
+        $lname = $request->lname;
         $email = $request->email;
         $bio = $request->bio;
         $references = $request->references;
@@ -47,21 +51,21 @@ class UserController extends Controller
         $title = $request->title;
         $years = $request->years;
         $location = $request->location;
+        $postalCode = $request->postalCode;
         $typeOfProfessional = $request->typeOfProfessional;
-        $typeOfProfessionalCustomer = $request->typeOfProfessionalCustomer;
         $password = $request->password;
         $professional = $request->professional;
         $histories = $request->histories;
 
-        $image=$this->uploadImage($request->get('photo64'),"logo", "user");
         if(User::where('email', $email)->count() > 0)
-            return response()->json([
-                'success'=>true, 
-                "data"=>"exists"
-            ], 200);
+        return response()->json([
+            'success'=>true, 
+            "data"=>"exists"
+        ], 200);
         
         $user = new User;
-        $user->name = $name;
+        $user->fname = $fname;
+        $user->lname = $lname;
         $user->email = $email;
         $user->bio = $bio;
         $user->references = $references;
@@ -73,11 +77,16 @@ class UserController extends Controller
         $user->location = $location;
         $user->password = bcrypt($password);
         $user->role = $professional;
-        if(!$professional)
-            $user->typeOfProfessional = $typeOfProfessionalCustomer;
-        else
+        if($professional)
             $user->typeOfProfessional = $typeOfProfessional;
-        $user->photo = url("/uploads/logo/".$image);
+        $user->postalCode = $postalCode;
+        if($request->get('photo64') != ""){
+            $image=$this->uploadImage($request->get('photo64'),"logo", "user");
+            $user->photo = url("/uploads/logo/".$image);
+        }else{
+            $user->photo = url("/uploads/logo/default.png");
+        }
+       
         $user->save();
         for($i = 0; $i < count($histories); $i ++){
             $history = $histories[$i];

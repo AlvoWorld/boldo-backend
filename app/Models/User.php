@@ -39,7 +39,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'typeOfProfessional'=>'array'
+        'typeOfProfessional'=>'array',
+        'styleOfCooking'=>'array'
     ];
 
     public function post()

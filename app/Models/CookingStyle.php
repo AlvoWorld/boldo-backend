@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Type extends Model
+class CookingStyle extends Model
 {
     protected $fillable = [
         'name',
@@ -13,6 +13,5 @@ class Type extends Model
         'sort',
         'etc',
     ];
-
     use HasFactory;
 }
