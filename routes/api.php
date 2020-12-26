@@ -37,6 +37,7 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin']
 });
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
+    Route::post('sign_out', 'UserController@signOut' );
     Route::post('upload_post', 'UserController@uploadPost' );
     Route::post('get_posts', 'UserController@getPosts' );
     Route::post('get_pros', 'UserController@getPros' );

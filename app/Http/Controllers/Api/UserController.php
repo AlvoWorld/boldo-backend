@@ -27,6 +27,29 @@ class UserController extends Controller
     {
     }
 
+    public function signOut(Type $var = null){
+        $id = $request->input('id');
+        $user = User::find($id);
+        $user->device_token =NULL;
+        $user->save();
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    public function updateToken(Request $request){
+        $id = $request->input('id');
+        $device_token = $request->input('token');
+
+        $user = User::find($id);
+        $user->device_token = $device_token;
+        $user->save();
+
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
     public function getFrontDatas(Type $var = null){
         $types = Type::select('id', 'name')->orderBy('sort')->get();
         $styles = CookingStyle::select('id', 'name')->orderBy('sort')->get();
@@ -105,7 +128,6 @@ class UserController extends Controller
         $token = "";
         if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
-
             $success['token'] =  $user->createToken($user->id)->accessToken;
             $success['user'] =  $user;
             
@@ -121,24 +143,11 @@ class UserController extends Controller
         ], 401);
     }
 
-    public function updateToken(Request $request){
-        $id = $request->input('id');
-        $device_token = $request->input('token');
-
-        $user = User::find($id);
-        $user->device_token = $device_token;
-        $user->save();
-
-        return response()->json([
-            'success'=>true, 
-        ]);
-    }
-
     public function uploadPost(Request $request){
         $id = $request->input('id');
         $image=$this->uploadImage($request->get('photo64'),"post", "post");
         $image = url("/uploads/post/".$image);
-        $post = Post::create(['user_id' => $id , 'photo' => $image]);
+        $post = Post::create(['user_id' => $id , 'photo' => $image, 'content' =>$request->input('content')]);
         return response()->json([
             'success'=>true,
             'data'=>$post 
