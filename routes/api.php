@@ -60,6 +60,5 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('set_block', 'UserController@setBlock');
     Route::post('get_blocks', 'UserController@getBlocks');
     Route::post('remove_block', 'UserController@removeBlock');
-
-    
+    Route::post('send_message', 'UserController@sendMessage');
 });

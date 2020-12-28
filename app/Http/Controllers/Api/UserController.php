@@ -613,4 +613,54 @@ class UserController extends Controller
             'data'=>$pending
         ]);
     }
+
+    public function sendMessage(Request $request){
+        $user_id = $request->input('user_id');
+        $message = $request->input('message');
+        $room = $request->input('room');
+
+        $chatroom = ChatRoom::where('room', $room)->first();
+        if(is_null($chatroom)){
+            return response()->json([
+                'success'=>false,
+                'data' =>''
+            ]);
+        }else{
+            if($chatroom->state1 == 0 || $chatroom->state2 == 0){
+                return response()->json([
+                    'success'=>false,
+                    'data' =>''
+                ]);
+            }
+        }
+
+        $user = User::find($user_id);
+
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $device_token = $user->device_token;
+
+        $notification = array(
+            'title' => $user->fname, 
+            'body' => $message,
+        );
+
+        $fields = array(
+            'to' => $device_token,
+            'notification' => $notification,
+            'data' => array(
+                "type" => 'new-message',
+            ),
+        );
+
+        $headers = array(
+            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+            'Content-type: Application/json'
+        );
+
+        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+        return response()->json([
+            'success'=>true,
+            'data'=>'',
+        ]);
+    }
 }
