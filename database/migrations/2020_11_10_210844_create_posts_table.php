@@ -18,7 +18,7 @@ class CreatePostsTable extends Migration
             $table->integer('user_id');
             $table->string('photo')->nullable();
             $table->string('title')->nullable();
-            $table->string('content')->nullable();
+            $table->text('content')->nullable();
             $table->integer('count')->nullable();
             $table->integer('review_id')->nullable();
             $table->text('share')->nullable();

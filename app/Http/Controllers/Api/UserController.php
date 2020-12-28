@@ -122,6 +122,30 @@ class UserController extends Controller
         ], 200);
     }
 
+    public function updateProfile(Request $request){
+        $id = $request->id;
+        $all = $request->all();
+        $user = User::find($id);
+        if($request->get('photo') != ""){
+            $image=$this->uploadImage($request->get('photo'),"logo", "user");
+            $all['photo'] = url("/uploads/logo/".$image);
+        }else{
+            $all['photo'] = url("/uploads/logo/default.png");
+        }
+
+        $user->update($all);
+        History::where('user_id', $user->id)->delete();
+
+        foreach($all['histories'] as $history){
+            $history['user_id'] = $user->id;
+            History::create($history);
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$all
+        ]);
+    }
+
     public function login(Request $request){
         $email = $request->email;
         $password = $request->password;
@@ -154,11 +178,30 @@ class UserController extends Controller
         ]);
     }
 
+    public function getTypeNamesFromIds($ids){
+        $data = array();
+        foreach($ids as $id){
+            $type = Type::find($id);
+            array_push($data, $type->name);
+        }
+        return $data;
+    }
+
+    public function getStyleNamesFromIds($ids){
+        $data = array();
+        foreach($ids as $id){
+            $type = CookingStyle::find($id);
+            array_push($data, $type->name);
+        }
+        return $data;
+    }
+
     public function getPosts(Request $request){
         $id = $request->input('id');
         $posts = Post::where('active', true)->orderBy('id')->get();
         foreach($posts as $post){
             $post->user;
+            $post['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($post['user']['typeOfProfessional']);
         }
         return response()->json([
             'success'=>true,
@@ -180,8 +223,11 @@ class UserController extends Controller
                     $bExist = true;
             }
 
-            if(!$bExist)
+            if(!$bExist){
+                $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
+                $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
                 array_push($filteredUsers, $user);
+            }
         }
 
         return response()->json([
@@ -226,9 +272,11 @@ class UserController extends Controller
 
     public function getPendings(Request $request){
         $id = $request->input('id');
-        $pendings = Pending::where([['user_id',  $id], ['state', 0]])->get();
+        $pendings = Pending::where([['user_id',  $id], ['state', 0]])
+        ->get();
         foreach($pendings as $pending){
             $pending->userPending;
+            $pending['userPending']['typeOfProfessional'] = $this->getTypeNamesFromIds($pending['userPending']['typeOfProfessional']);
         }
         return response()->json([
             'success'=>true,
@@ -388,6 +436,7 @@ class UserController extends Controller
         $users = Pending::where(['connect_id'=> $id, 'state'=>0])->get();
         foreach($users as $user){
             $user->user;
+            $user['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($user['user']['typeOfProfessional']);
         }
         return response()->json([
             'success'=>true,
@@ -403,55 +452,6 @@ class UserController extends Controller
         return response()->json([
             'success'=>true,
             'data'=>$user
-        ]);
-    }
-
-    public function updateProfile(Request $request){
-        $id = $request->id;
-        $user = User::find($id);
-
-        $name = $request->name;
-        $email = $request->email;
-        $bio = $request->bio;
-        $references = $request->references;
-        $styleOfCooking = $request->styleOfCooking;
-        $liquorServingCertification = $request->liquorServingCertification;
-        $company = $request->company;
-        $title = $request->title;
-        $years = $request->years;
-        $location = $request->location;
-        $typeOfProfessional = $request->typeOfProfessional;
-        $password = $request->password;
-        $professional = $request->role;
-        $histories = $request->histories;
-        $image=$this->uploadImage($request->get('photo'),"logo", "user");
-        if($image != 'default.png'){
-            $user->photo = url("/uploads/logo/".$image);
-        }
-
-        $user->name = $name;
-        $user->bio = $bio;
-        $user->references = $references;
-        $user->styleOfCooking = $styleOfCooking;
-        $user->liquorServingCertification = $liquorServingCertification;
-        $user->company = '';
-        $user->title = '';
-        $user->years = '';
-        $user->location = $location;
-        $user->typeOfProfessional = $typeOfProfessional;
-        $user->role = $professional;
-        $user->save();
-
-        History::where('user_id', $user->id)->delete();
-        for($i = 0; $i < count($histories); $i ++){
-            $history = $histories[$i];
-            $history['user_id'] = $user->id;
-            History::create($history);
-        }
-
-        return response()->json([
-            'success'=>true,
-            'data'=>''
         ]);
     }
 
