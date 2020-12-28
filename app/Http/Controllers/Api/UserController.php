@@ -237,40 +237,6 @@ class UserController extends Controller
         ]);
     }
 
-    public function sendConnect(Request $request){
-        $id = $request->input('id');
-        $send_user = User::find($id);
-        $user_id = $request->input('user_id');
-        $pending = Pending::create(['user_id' => $id , 'connect_id'=>$user_id, 'state'=>0]);
-
-        $user = User::find($user_id);
-        $url = 'https://fcm.googleapis.com/fcm/send';
-        $device_token = $user->device_token;
-
-        $notification = array(
-            'title' => "New Connection Comming", 
-            'text' => "You received connection from ".$send_user->name
-        );
-
-        $fields = array(
-            'to' => $device_token,
-            'notification' => $notification
-        );
-
-        $headers = array(
-            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
-            'Content-type: Application/json'
-        );
-
-        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
-
-
-        return response()->json([
-            'success'=>true,
-            'pending'=>$pending
-        ]);
-    }
-
     public function getPendings(Request $request){
         $id = $request->input('id');
         $pendings = Pending::where([['user_id',  $id], ['state', 0]])
@@ -338,7 +304,6 @@ class UserController extends Controller
         $posts = Post::where('user_id', $id)->orderBy('id')->get();
         $connections = Pending::where('state', 1)
                                 ->orderBy('id')->get();
-
         $data = array();
         foreach($connections as $connection){
            if($connection->user_id == $id){
@@ -361,26 +326,69 @@ class UserController extends Controller
         ]);
     }
 
+    public function sendConnect(Request $request){
+        $id = $request->input('id');
+        $send_user = User::find($id);
+        $user_id = $request->input('user_id');
+        $pending = Pending::create(['user_id' => $id , 'connect_id'=>$user_id, 'state'=>0]);
+
+        $user = User::find($user_id);
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $device_token = $user->device_token;
+
+        $notification = array(
+            'title' => "New Connection Comming", 
+            'body' => "You received connection from ".$send_user->fname
+        );
+
+        $fields = array(
+            'to' => $device_token,
+            'notification' => $notification,
+            'data' => array(
+                "type" => 'receive-pending',
+                "user_id" => $send_user->id
+            ),
+        );
+
+        $headers = array(
+            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+            'Content-type: Application/json'
+        );
+
+        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+
+
+        return response()->json([
+            'success'=>true,
+            'pending'=>$pending
+        ]);
+    }
+
     public function removePending(Request $request){
         $id = $request->input('id');
+        $user_id = $request->input('user_id');
+
 
         $pending = Pending::find($id);
-
         $pending->chatroom()->delete();
 
         $send_user = User::find($pending->user_id);
         $connect_user = User::find($pending->connect_id);
         $url = 'https://fcm.googleapis.com/fcm/send';
-        $device_token = $connect_user->device_token;
+        $device_token = $send_user->device_token;
 
         $notification = array(
             'title' => "Connection canceled", 
-            'text' => "Your connection canceled by ".$send_user->name
+            'body' => "Your connection canceled by ".$connect_user->fname
         );
 
         $fields = array(
             'to' => $device_token,
-            'notification' => $notification
+            'notification' => $notification,
+            'data' => array(
+                "type" => 'remove-pending',
+                "user_id" => $send_user->id
+            ),
         );
 
         $headers = array(
@@ -412,12 +420,16 @@ class UserController extends Controller
 
         $notification = array(
             'title' => "Connection Accepted", 
-            'text' => "Your connection accepted by ".$connect_user->name
+            'body' => "Your connection accepted by ".$connect_user->fname
         );
 
         $fields = array(
             'to' => $device_token,
-            'notification' => $notification
+            'notification' => $notification,
+            'data' => array(
+                "type" => 'apply-pending',
+                "user_id" => $connect_user->id
+            ),
         );
 
         $headers = array(
@@ -577,35 +589,28 @@ class UserController extends Controller
         ]);
     }
 
-    public function checkConnection(Request $request){
+    public function makeChatRoom(Request $request){
         $id = $request->id;
         $oposit_id = $request->oposit_id;
-        $users = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id, 'state'=>1])->get()->count();
-        return response()->json([
-            'success'=>true,
-            'data'=>$users
-        ]);
-    }
+        $user = User::find($oposit_id);
 
-    public function autoConnection(Request $request){
-        $id = $request->id;
-        $oposit_id = $request->oposit_id;
-
-        $connections = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id])->get()->count();
-
-        if($connections > 0){
-            $pending = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id])->first();
+        $pending = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id])->first();
+        if(is_null($pending)){
+            $pending = Pending::create(['user_id'=> $id, 'connect_id'=>$oposit_id, 'state'=>1]);
+            $room = 'room'.time();
+            $all = array('pending_id'=>$pending->id,  'room'=>$room, 'state1'=>1, 'state2'=>1);
+            ChatRoom::create($all);
         }else{
-            $pending = new Pending;
+            $pending->state = 1;
+            $pending->save();
         }
 
-        $pending->user_id = $id;
-        $pending->connect_id = $oposit_id;
-        $pending->state = 1;
-        $pending->save();
+        $chatroom = $pending->chatroom;
+        $pending['user'] = $user;
+      
         return response()->json([
             'success'=>true,
-            'data'=>''
+            'data'=>$pending
         ]);
     }
 }

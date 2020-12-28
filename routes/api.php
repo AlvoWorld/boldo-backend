@@ -55,8 +55,7 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('get_profile', 'UserController@getProfile');
     Route::post('update_profile', 'UserController@updateProfile');
     Route::post('send_report', 'UserController@sendReport');
-    Route::post('check_connection', 'UserController@checkConnection');
-    Route::post('auto_connection', 'UserController@autoConnection');
+    Route::post('make_chatroom', 'UserController@makeChatRoom');
     Route::post('get_contacts', 'UserController@getContacts');
     Route::post('set_block', 'UserController@setBlock');
     Route::post('get_blocks', 'UserController@getBlocks');
