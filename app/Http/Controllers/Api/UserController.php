@@ -347,8 +347,10 @@ class UserController extends Controller
            }
            if($connection->user_id == $id || $connection->connect_id == $id){
                $connection->user = $user;
+               $connection['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($connection['user']['typeOfProfessional']);
                array_push($data, $connection);
-            }
+           }
+
         }
 
         return response()->json([
@@ -457,6 +459,38 @@ class UserController extends Controller
 
     public function sendReport(Request $request){
         
+        return response()->json([
+            'success'=>true,
+            'data'=>''
+        ]);
+    }
+
+    public function checkConnection(Request $request){
+        $id = $request->id;
+        $oposit_id = $request->oposit_id;
+        $users = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id, 'state'=>1])->get()->count();
+        return response()->json([
+            'success'=>true,
+            'data'=>$users
+        ]);
+    }
+
+    public function autoConnection(Request $request){
+        $id = $request->id;
+        $oposit_id = $request->oposit_id;
+
+        $connections = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id])->get()->count();
+
+        if($connections > 0){
+            $pending = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id])->first();
+        }else{
+            $pending = new Pending;
+        }
+
+        $pending->user_id = $id;
+        $pending->connect_id = $oposit_id;
+        $pending->state = 1;
+        $pending->save();
         return response()->json([
             'success'=>true,
             'data'=>''
