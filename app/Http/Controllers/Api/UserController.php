@@ -11,6 +11,7 @@ use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
+use App\Models\ChatRoom;
 use App\Models\Type;
 use App\Models\CookingStyle;
 use App\Traits\ImageOperation;
@@ -364,6 +365,9 @@ class UserController extends Controller
         $id = $request->input('id');
 
         $pending = Pending::find($id);
+
+        $pending->chatroom()->delete();
+
         $send_user = User::find($pending->user_id);
         $connect_user = User::find($pending->connect_id);
         $url = 'https://fcm.googleapis.com/fcm/send';
@@ -393,10 +397,13 @@ class UserController extends Controller
 
     public function applyPending(Request $request){
         $id = $request->input('id');
-
         $pending = Pending::find($id);
         $pending->state = 1;
         $pending->save();
+
+        $room = 'room'.time();
+        $all = array('pending_id'=>$pending->id,  'room'=>$room, 'state1'=>1, 'state2'=>1);
+        ChatRoom::create($all);
 
         $send_user = User::find($pending->user_id);
         $connect_user = User::find($pending->connect_id);
@@ -458,10 +465,115 @@ class UserController extends Controller
     }
 
     public function sendReport(Request $request){
-        
+        $id = $request->id;
         return response()->json([
             'success'=>true,
             'data'=>''
+        ]);
+    }
+
+    public function getContacts(Request $request){
+        $id = $request->id;
+        $user = User::find($id);
+        $role = $user->role;
+        $query = Pending::where('state', 1);
+        if($role == 1){
+            $query->where("connect_id", $id);
+        }else{
+            $query->where("user_id", $id);
+        }
+        $contacts = $query->get();
+
+        $data = array();
+        foreach ($contacts as $contact) {
+            $chatroom = $contact->chatroom;
+            if($role == 1){
+                if($chatroom->state2 == 1){
+                    $user = User::find($contact->user_id);
+                    $contact['user'] = $user;
+                    array_push($data, $contact);
+                }
+            }else{
+                if($chatroom->state1 == 1){
+                    $user = User::find($contact->connect_id);
+                    $contact['user'] = $user;
+                    array_push($data, $contact);
+                }
+            }
+        }
+        
+        return response()->json([
+            'success'=>true,
+            'data'=>$data
+        ]);
+    }
+
+    public function setBlock(Request $request){
+        $role = $request->role;
+        $id = $request->id;
+
+        $chatroom = ChatRoom::find($id);
+        if($role == 1){
+            $chatroom->state2 = 0;
+        }else{
+            $chatroom->state1 = 0;
+        }
+        $chatroom->save();
+        return response()->json([
+            'success'=>true,
+            'data'=>''
+        ]);
+    }
+
+    public function removeBlock(Request $request){
+    
+        $role = $request->role;
+        $id = $request->id;
+        $chatroom = ChatRoom::find($id);
+        if($role == 1){
+            $chatroom->state2 = 1;
+        }else{
+            $chatroom->state1 = 1;
+        }
+        $chatroom->save();
+        return response()->json([
+            'success'=>true,
+            'data'=>''
+        ]);
+    }
+
+    public function getBlocks(Request $request){
+        $id = $request->id;
+        $user = User::find($id);
+
+        if($user->role == 1){
+            $pendings = Pending::where('connect_id', $id)->where('state', 1)->get();
+        }else{
+            $pendings = Pending::where('user_id', $id)->where('state', 1)->get();
+        }
+
+        $data = array();
+        foreach ($pendings as $pending) {
+            if($user->role == 1){
+                $chatroom = ChatRoom::where('state2', 0)->where('pending_id', $pending->id)->first();
+                if(!is_null($chatroom)){
+                    $oposit_user = User::find($pending->user_id);
+                    $chatroom['user']=$oposit_user;
+                    array_push($data, $chatroom);
+                }
+              
+            }else{
+                $chatroom = ChatRoom::where('state1', 0)->where('pending_id', $pending->id)->first();
+                if(!is_null($chatroom)){
+                    $oposit_user = User::find($pending->connect_id);
+                    $chatroom['user']=$oposit_user;
+                    array_push($data, $chatroom);
+                }
+            }
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$data
         ]);
     }
 

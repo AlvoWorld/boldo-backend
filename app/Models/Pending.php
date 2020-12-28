@@ -23,4 +23,9 @@ class Pending extends Model
     {
         return $this->belongsTo('App\Models\User', 'connect_id');
     }
+
+    public function chatroom()
+    {
+        return $this->hasOne('App\Models\ChatRoom');
+    }
 }

@@ -15,9 +15,10 @@ class CreateChatRoomsTable extends Migration
     {
         Schema::create('chat_rooms', function (Blueprint $table) {
             $table->id();
-            $table->integer('oposit')->nullable();
-            $table->integer('user_id')->nullable();
+            $table->integer('pending_id')->nullable();
             $table->string('room')->nullable();
+            $table->integer('state1')->nullable();
+            $table->integer('state2')->nullable();
             $table->timestamps();
         });
     }
