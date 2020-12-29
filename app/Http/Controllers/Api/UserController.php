@@ -121,11 +121,14 @@ class UserController extends Controller
         }
        
         $user->save();
-        for($i = 0; $i < count($histories); $i ++){
-            $history = $histories[$i];
-            $history['user_id'] = $user->id;
-            History::create($history);
+        if($user->role == 1){
+            for($i = 0; $i < count($histories); $i ++){
+                $history = $histories[$i];
+                $history['user_id'] = $user->id;
+                History::create($history);
+            }
         }
+      
         return response()->json([
             'success'=>true, 
             "data"=>''
