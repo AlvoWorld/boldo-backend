@@ -81,11 +81,12 @@ class UserController extends Controller
         $professional = $request->professional;
         $histories = $request->histories;
 
-        if(User::where('email', $email)->count() > 0)
-        return response()->json([
-            'success'=>true, 
+        if (User::where('email', $email)->count() > 0) {
+            return response()->json([
+            'success'=>true,
             "data"=>"exists"
         ], 200);
+        }
         
         $user = new User;
         $user->fname = $fname;
@@ -93,7 +94,7 @@ class UserController extends Controller
         $user->email = $email;
         $user->bio = $bio;
         $user->references = $references;
-        $user->styleOfCooking = $styleOfCooking;
+        
         $user->liquorServingCertification = $liquorServingCertification;
         $user->company = '';
         $user->title = '';
@@ -101,8 +102,16 @@ class UserController extends Controller
         $user->location = $location;
         $user->password = bcrypt($password);
         $user->role = $professional;
-        if($professional)
+
+        if ($professional) {
             $user->typeOfProfessional = $typeOfProfessional;
+            $user->styleOfCooking = $styleOfCooking;
+        } else {
+            $user->typeOfProfessional = array();
+            $user->styleOfCooking = array();
+        }   
+
+
         $user->postalCode = $postalCode;
         if($request->get('photo64') != ""){
             $image=$this->uploadImage($request->get('photo64'),"logo", "user");
