@@ -66,8 +66,31 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getTypeNamesFromIds($ids){
+        $data = array();
+        foreach($ids as $id){
+            $type = Type::find($id);
+            array_push($data, $type->name);
+        }
+        return $data;
+    }
+
+    public function getStyleNamesFromIds($ids){
+        $data = array();
+        foreach($ids as $id){
+            $type = CookingStyle::find($id);
+            array_push($data, $type->name);
+        }
+        return $data;
+    }
+
     public function getUsers(Request $request){
         $users = User::where('role', '!=', 2)->get();
+
+        foreach($users as $user){
+            $user->typeOfProfessional = $this.getTypeNamesFromIds($user->typeOfProfessional);
+            $user->styleOfCooking = $this.getStyleNamesFromIds($user->styleOfCooking);
+        }
         return response()->json([
             'success'=>true, 
             'data'=>$users

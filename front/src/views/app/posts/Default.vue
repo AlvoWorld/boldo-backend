@@ -45,8 +45,14 @@ export default {
                     html: true,
                 },
                 {
-                    label: "User Name",
-                    field: "user.name",
+                    label: "User F Name",
+                    field: "user.fname",
+                    numeric: false,
+                    html: true,
+                },
+                {
+                    label: "User L Name",
+                    field: "user.lname",
                     numeric: false,
                     html: true,
                 },

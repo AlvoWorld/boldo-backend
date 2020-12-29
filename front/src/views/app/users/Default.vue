@@ -58,10 +58,16 @@ export default {
                     html: true,
                 },
                 {
-                    label: "Name",
-                    field: "name",
+                    label: "First Name",
+                    field: "user.fname",
                     numeric: false,
-                    html: false,
+                    html: true,
+                },
+                {
+                    label: "Last Name",
+                    field: "user.lname",
+                    numeric: false,
+                    html: true,
                 },
                 {
                     label: "Email",
