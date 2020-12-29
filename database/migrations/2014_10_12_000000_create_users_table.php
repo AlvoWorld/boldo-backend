@@ -28,8 +28,8 @@ class CreateUsersTable extends Migration
             $table->string('years')->nullable()->default("");
             $table->string('location')->nullable()->default("");
             $table->string('postalCode')->nullable()->default("");
-            $table->text('typeOfProfessional')->nullable()->default("[]");
-            $table->text('styleOfCooking')->nullable()->default("[]");
+            $table->text('typeOfProfessional')->default("[]")->nullable();
+            $table->text('styleOfCooking')->default("[]")->nullable();
             $table->integer('role')->nullable();
             $table->string('device_token')->nullable();
             $table->timestamp('email_verified_at')->nullable();
