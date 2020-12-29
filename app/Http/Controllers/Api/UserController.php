@@ -28,10 +28,10 @@ class UserController extends Controller
     {
     }
 
-    public function signOut(Type $var = null){
+    public function signOut(Request $request){
         $id = $request->input('id');
         $user = User::find($id);
-        $user->device_token =NULL;
+        $user->device_token = NULL;
         $user->save();
         return response()->json([
             'success'=>true, 
@@ -616,6 +616,7 @@ class UserController extends Controller
 
     public function sendMessage(Request $request){
         $user_id = $request->input('user_id');
+        $id = $request->input('id');
         $message = $request->input('message');
         $room = $request->input('room');
 
@@ -635,12 +636,13 @@ class UserController extends Controller
         }
 
         $user = User::find($user_id);
+        $from = User::find($id);
 
         $url = 'https://fcm.googleapis.com/fcm/send';
         $device_token = $user->device_token;
 
         $notification = array(
-            'title' => $user->fname, 
+            'title' => "From: ". $from->fname, 
             'body' => $message,
         );
 
@@ -649,6 +651,7 @@ class UserController extends Controller
             'notification' => $notification,
             'data' => array(
                 "type" => 'new-message',
+                "room" => $room
             ),
         );
 
