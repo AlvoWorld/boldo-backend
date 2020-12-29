@@ -76,7 +76,23 @@ class AdminController extends Controller
 
     public function removeUser(Request $request){
         $user_id = $request->user_id;
-        $user = User::find($user_id)->delete();
+        $user = User::find($user_id);
+
+        $pendings = $user->pending;
+        foreach($pendings as $pending){
+            $pending->chatroom()->delete();
+        }
+        $pendingUsers = $user->pendingUser;
+        foreach($pendingUsers as $pendingUser){
+            $pendingUser->chatroom()->delete();
+        }
+        $user->histories()->delete();
+        $user->pendingUser()->delete();
+        $user->pending()->delete();
+        $user->receipe()->delete();
+        $user->post()->delete();
+
+        $user->delete();
         return response()->json([
             'success'=>true, 
         ]);
