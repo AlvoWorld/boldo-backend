@@ -15,7 +15,7 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $default = array();
-            $default = json_encode($default);
+            // $default = json_encode($default);
             $table->id();
             $table->string('fname');
             $table->string('lname');
