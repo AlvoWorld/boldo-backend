@@ -14,6 +14,8 @@ class CreateUsersTable extends Migration
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
+            $default = array();
+            $default = json_encode($default);
             $table->id();
             $table->string('fname');
             $table->string('lname');
@@ -28,8 +30,8 @@ class CreateUsersTable extends Migration
             $table->string('years')->nullable()->default("");
             $table->string('location')->nullable()->default("");
             $table->string('postalCode')->nullable()->default("");
-            $table->text('typeOfProfessional')->default("[]")->nullable();
-            $table->text('styleOfCooking')->default("[]")->nullable();
+            $table->text('typeOfProfessional')->nullable()->default($default);
+            $table->text('styleOfCooking')->nullable()->default($default);
             $table->integer('role')->nullable();
             $table->string('device_token')->nullable();
             $table->timestamp('email_verified_at')->nullable();
