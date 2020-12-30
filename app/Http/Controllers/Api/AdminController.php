@@ -11,6 +11,8 @@ use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
+use App\Models\Type;
+use App\Models\CookingStyle;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
