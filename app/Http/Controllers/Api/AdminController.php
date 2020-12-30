@@ -88,8 +88,8 @@ class AdminController extends Controller
         $users = User::where('role', '!=', 2)->get();
 
         foreach($users as $user){
-            $user->typeOfProfessional = $this.getTypeNamesFromIds($user->typeOfProfessional);
-            $user->styleOfCooking = $this.getStyleNamesFromIds($user->styleOfCooking);
+            $user->typeOfProfessional = $this->getTypeNamesFromIds($user->typeOfProfessional);
+            $user->styleOfCooking = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
         return response()->json([
             'success'=>true, 
