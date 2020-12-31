@@ -38,7 +38,6 @@ class DatabaseSeeder extends Seeder
 
         DB::table('cooking_styles')->insert([
             ['name' => "American", 'sort' => 0, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => "Pastry Chef", 'sort' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['name' => "Asian Fusion", 'sort' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['name' => "Cajun", 'sort' => 3, 'created_at' => now(), 'updated_at' => now()],
             ['name' => "Canadian", 'sort' => 4, 'created_at' => now(), 'updated_at' => now()],
