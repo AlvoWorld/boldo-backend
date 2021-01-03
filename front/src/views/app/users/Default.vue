@@ -59,13 +59,13 @@ export default {
                 },
                 {
                     label: "First Name",
-                    field: "user.fname",
+                    field: "fname",
                     numeric: false,
                     html: true,
                 },
                 {
                     label: "Last Name",
-                    field: "user.lname",
+                    field: "lname",
                     numeric: false,
                     html: true,
                 },
