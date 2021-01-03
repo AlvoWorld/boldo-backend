@@ -235,7 +235,6 @@ class UserController extends Controller
                 else if($pending->user_id == $user->id)
                     $bExist = true;
             }
-
             if(!$bExist){
                 $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
                 $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
