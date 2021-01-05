@@ -76,6 +76,7 @@ class UserController extends Controller
         $years = $request->years;
         $location = $request->location;
         $postalCode = $request->postalCode;
+        $geolocation = $request->geolocation;
         $typeOfProfessional = $request->typeOfProfessional;
         $password = $request->password;
         $professional = $request->professional;
@@ -102,6 +103,7 @@ class UserController extends Controller
         $user->location = $location;
         $user->password = bcrypt($password);
         $user->role = $professional;
+        $user->geolocation = $geolocation;
 
         if ($professional) {
             $user->typeOfProfessional = $typeOfProfessional;
@@ -110,7 +112,6 @@ class UserController extends Controller
             $user->typeOfProfessional = array();
             $user->styleOfCooking = array();
         }   
-
 
         $user->postalCode = $postalCode;
         if($request->get('photo64') != ""){

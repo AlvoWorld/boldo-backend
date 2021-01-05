@@ -27,6 +27,7 @@ class CreateUsersTable extends Migration
             $table->string('title')->nullable()->default("");
             $table->string('years')->nullable()->default("");
             $table->string('location')->nullable()->default("");
+            $table->string('geolocation')->nullable()->default("");
             $table->string('postalCode')->nullable()->default("");
             $table->text('typeOfProfessional')->nullable();
             $table->text('styleOfCooking')->nullable();

@@ -27,7 +27,8 @@ class User extends Authenticatable
         'references',                             
         'liquorServingCertification',
         'location',                               
-        'postalCode',                             
+        'postalCode',  
+        'geolocation',                           
         'typeOfProfessional',                     
         'styleOfCooking',                         
         'role',                                   
@@ -53,7 +54,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'typeOfProfessional'=>'array',
-        'styleOfCooking'=>'array'
+        'styleOfCooking'=>'array',
+        'geolocation'=>'array'
     ];
 
     public function post()
