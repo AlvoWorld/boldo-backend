@@ -72,7 +72,6 @@ export default {
             name: item.name, 
             email: item.email, 
             role:item.role,  
-            role:item.role,
             token:item.token,
             ...currentUser })
         } else {

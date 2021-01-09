@@ -106,7 +106,6 @@ export default {
     },
     watch: {
         currentUser(val) {
-            console.log(val);
             if (val && val.token && val.token.length > 0) {
                 setTimeout(() => {
                     this.$router.push("/app");
