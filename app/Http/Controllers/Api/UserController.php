@@ -227,25 +227,14 @@ class UserController extends Controller
         $user = User::find($request->input('id'));
         $pendings = Pending::where('user_id', $user->id)->orWhere('connect_id', $user->id)->get();
         $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->where('active', true)->orderBy('id')->get();
-        $filteredUsers = array();
         foreach($users as $user){
-            $bExist = false;
-            foreach($pendings as $pending){
-                if($pending->connect_id == $user->id)
-                    $bExist = true;
-                else if($pending->user_id == $user->id)
-                    $bExist = true;
-            }
-            if(!$bExist){
-                $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
-                $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
-                array_push($filteredUsers, $user);
-            }
+            $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
+            $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
 
         return response()->json([
             'success'=>true,
-            'data'=>$filteredUsers,
+            'data'=>$users,
         ]);
     }
 
