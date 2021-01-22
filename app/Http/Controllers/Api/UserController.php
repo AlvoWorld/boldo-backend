@@ -140,7 +140,7 @@ class UserController extends Controller
         $id = $request->id;
         $all = $request->all();
         $user = User::find($id);
-        if($request->get('photo') != ""){
+        if(base64_decode($request->get('photo'), true)){
             $image=$this->uploadImage($request->get('photo'),"logo", "user");
             $all['photo'] = url("/uploads/logo/".$image);
         }else{
