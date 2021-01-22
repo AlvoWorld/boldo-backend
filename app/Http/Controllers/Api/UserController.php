@@ -161,7 +161,7 @@ class UserController extends Controller
         $email = $request->email;
         $password = $request->password;
         $token = "";
-        if (Auth::attempt(['email' => $email, 'password' => $password])) {
+        if (Auth::attempt(['email' => $email, 'password' => $password, 'active' =>true])) {
             $user = Auth::user();
             $success['token'] =  $user->createToken($user->id)->accessToken;
             $success['user'] =  $user;
