@@ -212,7 +212,7 @@ class UserController extends Controller
 
     public function getPosts(Request $request){
         $id = $request->input('id');
-        $posts = Post::where('active', true)->orderBy('id')->get();
+        $posts = Post::where('active', true)->orderBy('id', 'desc')->get();
         foreach($posts as $post){
             $post->user;
             $post['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($post['user']['typeOfProfessional']);
