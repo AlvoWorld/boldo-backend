@@ -6,13 +6,12 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Post;
-use App\Models\Pending;
 use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
 use App\Models\Type;
-use App\Models\CookingStyle;
+use App\Models\Style;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
@@ -67,6 +66,33 @@ class AdminController extends Controller
             'message'=>'Unauthorised'
         ]);
     }
+
+    public function getData(Request $request){
+        $types = Type::get()->count();
+        $styles = Style::get()->count();
+        $users = User::whereIn('role', [0, 1])->get()->count();
+        $actived_users = User::whereIn('role', [0, 1])->where('active', true)->get()->count();
+        $customers = User::where('role', 0)->get()->count();
+        $actived_customers = User::where('role', 0)->where('active', true)->get()->count();
+        $pros = User::where('role', 1)->get()->count();
+        $actived_pros = User::where('role', 1)->where('active', true)->get()->count();
+        $posts = Post::get()->count();
+        $actived_posts = Post::get()->where('active', true)->count();
+        $recipes = Recipe::get()->count();
+        $actived_recipes = Recipe::get()->where('active', true)->count();
+        $actived_recipes = Recipe::get()->where('active', true)->count();
+        $reports = Report::get()->count();
+        $new_reports = Report::get()->where('done', false)->count();
+        return response()->json([
+            'success'=>true, 
+            'data'=>array('types' => $types, 'styles' => $styles, 'users' => $users, 'actived_users'=>$actived_users,
+               'customers' => $customers, 'actived_customers' => $actived_customers, 'pros' => $pros, 'actived_pros' => $actived_pros, 
+                'posts' => $posts, 'actived_posts'=>$actived_posts,'recipes' => $recipes, 'actived_recipes'=> $actived_recipes,
+                'reports' => $reports, 'new_reports' => $new_reports,)
+               
+        ]);
+    }
+
 
     public function getTypeNamesFromIds($ids){
         $data = array();

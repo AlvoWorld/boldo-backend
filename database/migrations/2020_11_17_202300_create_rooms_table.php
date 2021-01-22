@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateChatRoomsTable extends Migration
+class CreateRoomsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,14 @@ class CreateChatRoomsTable extends Migration
      */
     public function up()
     {
-        Schema::create('chat_rooms', function (Blueprint $table) {
+        Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->integer('pending_id')->nullable();
-            $table->string('room')->nullable();
-            $table->integer('state1')->nullable();
-            $table->integer('state2')->nullable();
+            $table->integer('user_id');
+            $table->integer('connect_id');
+            $table->integer('block1')->nullable();
+            $table->integer('block2')->nullable();
+            $table->boolean('active');
+            $table->string('etc')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +32,6 @@ class CreateChatRoomsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chat_rooms');
+        Schema::dropIfExists('rooms');
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCookingStylesTable extends Migration
+class CreateStylesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateCookingStylesTable extends Migration
      */
     public function up()
     {
-        Schema::create('cooking_styles', function (Blueprint $table) {
+        Schema::create('styles', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
             $table->string('description')->nullable();
@@ -30,6 +30,6 @@ class CreateCookingStylesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cooking_styles');
+        Schema::dropIfExists('styles');
     }
 }

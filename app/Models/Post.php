@@ -13,9 +13,10 @@ class Post extends Model
         'photo',        
         'title',             
         'content',             
+        'up',      
+        'down',  
+        'count',  
         'active',             
-        'review_id',      
-        'share',          
         'etc'                 
     ];
 

@@ -31,21 +31,15 @@ class CreateUsersTable extends Migration
             $table->string('postalCode')->nullable()->default("");
             $table->text('typeOfProfessional')->nullable();
             $table->text('styleOfCooking')->nullable();
-            $table->integer('role')->nullable();
             $table->string('device_token')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->integer('role')->nullable(); //0:customer 1:pro 2: admin
             $table->boolean('active')->nullable()->default(true);
             $table->string('etc')->nullable()->default("");
             $table->rememberToken();
             $table->timestamps();
         });
     }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('users');

@@ -19,8 +19,9 @@ class CreateRecipesTable extends Migration
             $table->string('photo')->nullable();
             $table->string('title')->nullable();
             $table->text('content')->nullable();
-            $table->string('review')->nullable();
-            $table->integer('count')->nullable();
+            $table->integer('up')->nullable()->default(0);
+            $table->integer('down')->nullable()->default(0);
+            $table->integer('count')->nullable()->default(0);
             $table->boolean('active')->nullable()->default(true);
             $table->string('etc')->nullable();
             $table->timestamps();

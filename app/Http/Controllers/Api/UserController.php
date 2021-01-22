@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Post;
-use App\Models\Pending;
 use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;

@@ -17,7 +17,8 @@ class CreateReportsTable extends Migration
             $table->id();
             $table->integer('post_id')->nullable();
             $table->integer('user_id')->nullable();
-            $table->string('review')->nullable();
+            $table->string('content')->nullable();
+            $table->boolean('done')->nullable()->default(false);
             $table->string('etc')->nullable();
             $table->timestamps();
         });
