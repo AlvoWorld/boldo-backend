@@ -222,13 +222,11 @@ class UserController extends Controller
 
     public function getPros(Request $request){
         $user = User::find($request->input('id'));
-        $pendings = Pending::where('user_id', $user->id)->orWhere('connect_id', $user->id)->get();
-        $users = User::where('role', 1)->where('id', '!=', $request->input('id'))->where('active', true)->orderBy('id')->get();
+        $users = User::where('role', 1)->where('active', true)->orderBy('id')->get();
         foreach($users as $user){
             $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
             $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
-
         return response()->json([
             'success'=>true,
             'data'=>$users,
