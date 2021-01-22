@@ -68,16 +68,6 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Recipe');
     }
 
-    public function pending()
-    {
-        return $this->hasMany('App\Models\Pending');
-    }
-
-    public function pendingUser()
-    {
-        return $this->hasMany('App\Models\Pending');
-    }
-
     public function histories()
     {
         return $this->hasMany('App\Models\History');

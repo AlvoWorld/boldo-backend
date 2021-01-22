@@ -152,53 +152,108 @@ class AdminController extends Controller
         ]);
     }
 
-    
+    public function getStyles(Request $request){
+        $page = $request->page;
+        $total = Style::orderBy('id')->get()->count();
+        $styles = Style::orderBy('id')
+                ->skip(10*($page-1))
+                ->take(10)
+                ->get();
+        $data['total'] = $total;
+        $data['items'] = $styles;
+        return response()->json([
+            'success'=>true, 
+            'data'=> $data
+        ]);
+    }
+
+    public function saveStyle(Request $request){
+        $all = $request->all();
+        $style = Style::updateOrCreate(['id' => $all['id']], $all);
+
+        $notification = array(
+            'title' => "New Professional Styles Added", 
+            'body' => "You received new style from admin"
+        );
+
+        $notificationData = array(
+            "type" => 'new-style',
+        );
+
+        // $this->sendNotificationToUsers($notification, $notificationData);
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    public function deleteStyle(Request $request){
+        $style_id = $request->input('id');
+        Style::find($style_id)->delete();
+        $users = User::whereIn('role', [0, 1])->get();
+        foreach($users as $user){
+            $styleOfCooking = $user->styleOfCooking;
+            $styleOfCooking = $this->removeValueFromArray($style_id, $styleOfCooking);
+            $user->styleOfCooking = $styleOfCooking;
+            $user->save();
+        }
+
+        $notification = array(
+            'title' => "Professional Style Removed", 
+            'body' => "Your received style removed signal from admin"
+        );
+
+        $notificationData = array(
+            "type" => 'new-type',
+        );
+        // $this->sendNotificationToUsers($notification, $notificationData);
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
 
     public function getUsers(Request $request){
-        $users = User::where('role', '!=', 2)->get();
-
+        $page = $request->page;
+        $total = User::whereIn('role', [0, 1])->get()->count();
+        $users = User::whereIn('role', [0, 1])
+                ->orderBy('id')
+                ->skip(10*($page-1))
+                ->take(10)
+                ->get();
         foreach($users as $user){
             $user->typeOfProfessional = $this->getTypeNamesFromIds($user->typeOfProfessional);
             $user->styleOfCooking = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
+        
+        $data['total'] = $total;
+        $data['items'] = $users;
         return response()->json([
             'success'=>true, 
-            'data'=>$users
+            'data'=> $data
         ]);
     }
 
-    public function removeUser(Request $request){
-        $user_id = $request->user_id;
+    public function deleteUser(Request $request){
+        $user_id = $request->id;
         $user = User::find($user_id);
 
-        $pendings = $user->pending;
-        foreach($pendings as $pending){
-            $pending->chatroom()->delete();
-        }
-        $pendingUsers = $user->pendingUser;
-        foreach($pendingUsers as $pendingUser){
-            $pendingUser->chatroom()->delete();
-        }
         $user->histories()->delete();
-        $user->pendingUser()->delete();
-        $user->pending()->delete();
         $user->receipe()->delete();
         $user->post()->delete();
-
         $user->delete();
+
         return response()->json([
             'success'=>true, 
         ]);
     }
 
     public function activeUser(Request $request){
-        $user_id = $request->user_id;
+        $user_id = $request->id;
         $user = User::find($user_id);
         $user->active = !$user->active;
         $user->save();
         return response()->json([
             'success'=>true, 
-            'data'=>$user
+            'data'=>$user->active
         ]);
     }
 
@@ -265,7 +320,7 @@ class AdminController extends Controller
     public function sendNotificationToUsers($notification, $notificationData)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
-        $users = User::whereIn('role', [0, 1])->get();
+        $users = User::whereIn('role', [0, 1])->where('active', true)->get();
         foreach($users as $user){
             $device_token = $user->device_token;
             if(!is_null($device_token)){
@@ -307,7 +362,7 @@ class AdminController extends Controller
     public function getStyleNamesFromIds($ids){
         $data = array();
         foreach($ids as $id){
-            $type = CookingStyle::find($id);
+            $type = Style::find($id);
             array_push($data, $type->name);
         }
         return $data;

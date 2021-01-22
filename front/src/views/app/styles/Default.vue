@@ -24,7 +24,7 @@
     </div>
     <b-row>
       <b-colxx xxs="12">
-        <b-card class="mb-4" title="Registered Types" v-if="!loading">
+        <b-card class="mb-4" title="Registered Styles" v-if="!loading">
           <b-table
             ref="custom-table"
             class="vuetable"
@@ -38,14 +38,6 @@
             :fields="bootstrapTable.fields"
             :items="items"
           >
-            <template #cell(style)="row">
-              <p :hidden="row.item.style == 1">
-                No
-              </p>
-              <p :hidden="row.item.style == 0">
-                Yes
-              </p>
-            </template>
             <template #cell(action)="row">
               <b-button
                 @click="editItem(row.item, row.index, $event.target)"
@@ -87,12 +79,9 @@
         <div class="loading" v-else></div>
       </b-colxx>
     </b-row>
-    <b-modal id="modalbasic" ref="modalbasic" title="Type">
+    <b-modal id="modalbasic" ref="modalbasic" title="Style">
         <b-form-group label="Name">
           <b-form-input type="text" v-model="item.name" />
-        </b-form-group>
-        <b-form-group label="Show Style">
-          <input type="checkbox" v-model="item.style" >
         </b-form-group>
       <template slot="modal-footer">
         <b-button @click="saveItem()" :disabled="loading" class="mr-1" variant="success default">Save</b-button>
@@ -123,7 +112,6 @@ export default {
             tdClass: "list-item-heading",
           },
           { key: "name", label: "Name", sortable: true },
-          { key: "style", label: "Style", sortable: true },
           { key: "action", label: "Action" },
         ],
       },
@@ -133,7 +121,6 @@ export default {
       item: {
         id: -1,
         name: "",
-        style: false,
         sort: 1,
       },
       item_id: -1,
@@ -148,7 +135,7 @@ export default {
 
   methods: {
     getData() {
-      let url = `admin/get_types`;
+      let url = `admin/get_styles`;
       let model = {
         page: this.currentPage,
       };
@@ -191,7 +178,7 @@ export default {
         id: id,
       };
 
-      let url = `admin/delete_type`;
+      let url = `admin/delete_style`;
       this.loading = true;
       webServices
         .post(url, JSON.stringify(model), {
@@ -202,7 +189,7 @@ export default {
         })
         .then((response) => {
           if (response.data.success) {
-            this.addNotification("success filled", "Success", "Type Deleted");
+            this.addNotification("success filled", "Success", "Item Deleted");
             this.getData();
           }
         })
@@ -210,7 +197,7 @@ export default {
           this.addNotification(
             "error filled",
             "Error",
-            "Type delete failed."
+            "Item delete failed."
           );
         })
         .finally(() => {
@@ -227,7 +214,6 @@ export default {
       let temp = {
         id: -1,
         name: "",
-        style: false,
         sort: 1,
       };
       this.item = temp;
@@ -258,7 +244,7 @@ export default {
         );
         return;
       }
-      let url = `admin/save_type`;
+      let url = `admin/save_style`;
       this.loading = true;
       webServices
         .post(url, JSON.stringify(this.item), {

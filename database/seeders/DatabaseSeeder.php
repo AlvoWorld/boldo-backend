@@ -68,7 +68,6 @@ class DatabaseSeeder extends Seeder
             ['name' => "Vegetarian", 'sort' => 29, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Vietnamese", 'sort' => 30, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Other", 'sort' => 31, 'created_at' => now(),'updated_at' => now()],
-            ['name' => "All", 'sort' => 32, 'created_at' => now(),'updated_at' => now()],
          ]);
     }
 }
