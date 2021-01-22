@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             ['name' => "Italian", 'sort' => 14, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Jamaican", 'sort' => 15, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Japanese", 'sort' => 16, 'created_at' => now(),'updated_at' => now()],
-            ['name' => "Jewish", 'sort' => 17, 'created_at' => now(),'updated_at' => now()],
+            ['name' => "Kosher", 'sort' => 17, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Korean", 'sort' => 18, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Mediterranean", 'sort' => 19, 'created_at' => now(),'updated_at' => now()],
             ['name' => "Mexican", 'sort' => 20, 'created_at' => now(),'updated_at' => now()],
