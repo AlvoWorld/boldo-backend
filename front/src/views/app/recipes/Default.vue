@@ -2,14 +2,14 @@
 <div>
     <b-row>
       <b-colxx xxs="12">
-        <h1>Registered Posts</h1>
+        <h1>Registered Recipes</h1>
       </b-colxx>
     </b-row>
     <b-row>
       <b-colxx xxs="12" md="12" xl="12" lg="12" class="col-left">
         <b-card class="mb-4" no-body>
           <datatable
-            title="Registered Posts"
+            title="Registered Recipes"
             :rows="recipes"
             :columns="columndata"
             v-model="action"
