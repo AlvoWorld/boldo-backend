@@ -9,7 +9,7 @@ class Type extends Model
 {
     protected $fillable = [
         'name',
-        'description',
+        'style',
         'sort',
         'etc',
     ];

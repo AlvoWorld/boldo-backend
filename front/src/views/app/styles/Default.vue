@@ -1,250 +1,306 @@
 <template>
-<div>
+  <div>
+    <div
+      style="align-items: center; flex-direction: row; display: flex"
+      class="mb-2"
+    >
+      <b-alert
+        show
+        variant="primary"
+        class="rounded mr-4"
+        style="margin-bottom: 0px; flex: 1"
+        >This action will refesh all users app.</b-alert
+      >
+      <div class="top-right-button-container">
+        <b-button
+          @click="newItem()"
+          variant="primary"
+          size="lg"
+          class="mb-2"
+          :disabled="loading"
+          >{{ $t("survey.add-new") }}</b-button
+        >
+      </div>
+    </div>
     <b-row>
       <b-colxx xxs="12">
-        <h1>Registered Users</h1>
-      </b-colxx>
-    </b-row>
-    <b-row>
-      <b-colxx xxs="12" md="12" xl="12" lg="12" class="col-left">
-        <b-card class="mb-4" no-body>
-          <datatable
-            title="Registered Users"
-            :rows="users"
-            :columns="columndata"
-            v-model="action"
-          ></datatable>
+        <b-card class="mb-4" title="Registered Types" v-if="!loading">
+          <b-table
+            ref="custom-table"
+            class="vuetable"
+            sort-by="title"
+            sort-desc.sync="false"
+            @row-selected="rowSelected"
+            selectable
+            :select-mode="bootstrapTable.selectMode"
+            :current-page="currentPage"
+            selectedVariant="primary"
+            :fields="bootstrapTable.fields"
+            :items="items"
+          >
+            <template #cell(style)="row">
+              <p :hidden="row.item.style == 1">
+                No
+              </p>
+              <p :hidden="row.item.style == 0">
+                Yes
+              </p>
+            </template>
+            <template #cell(action)="row">
+              <b-button
+                @click="editItem(row.item, row.index, $event.target)"
+                size="sm"
+                class="icon-button mb-1"
+                variant="primary default"
+                ><i class="simple-icon-pencil"></i
+              ></b-button>
+              <b-button
+                @click="deleteItem(row.item, row.index, $event.target)"
+                size="sm"
+                class="icon-button mb-1"
+                variant="danger default"
+                ><i class="simple-icon-trash"></i
+              ></b-button>
+            </template>
+          </b-table>
+          <b-pagination
+            size="sm"
+            align="center"
+            :total-rows="totalRows"
+            :per-page="perPage"
+            v-model="currentPage"
+          >
+            <template v-slot:next-text>
+              <i class="simple-icon-arrow-right" />
+            </template>
+            <template v-slot:prev-text>
+              <i class="simple-icon-arrow-left" />
+            </template>
+            <template v-slot:first-text>
+              <i class="simple-icon-control-start" />
+            </template>
+            <template v-slot:last-text>
+              <i class="simple-icon-control-end" />
+            </template>
+          </b-pagination>
         </b-card>
+        <div class="loading" v-else></div>
       </b-colxx>
     </b-row>
-
-    <b-modal id="modalProfile" ref="modalProfile" :title="$t('modal.modal-title')"
-       >
-        <b-row>
-            <b-colxx xxs="12">
-                <img :src="selectedUser.photo" alt="No Image" class="img-thumbnail border-0 rounded-circle list-thumbnail align-self-center xsmall">;
-            </b-colxx>
-        </b-row>
-        <template slot="modal-footer">
-            <b-button variant="primary" @click="somethingModal('modalbackdrop')" class="mr-1">Do Something</b-button>
-            <b-button variant="secondary" @click="hideModal('modalbackdrop')">Cancel</b-button>
-        </template>
+    <b-modal id="modalbasic" ref="modalbasic" title="Type">
+        <b-form-group label="Name">
+          <b-form-input type="text" v-model="item.name" />
+        </b-form-group>
+        <b-form-group label="Show Style">
+          <input type="checkbox" v-model="item.style" >
+        </b-form-group>
+      <template slot="modal-footer">
+        <b-button @click="saveItem()" :disabled="loading" class="mr-1" variant="success default">Save</b-button>
+        <b-button @click="hideModal()" :disabled="loading" variant="dark default">Cancel</b-button>
+      </template>
     </b-modal>
-</div>
+  </div>
 </template>
 
 <script>
 import webServices from "../../../webServices";
 import { mapGetters } from "vuex";
-import datatable from "../../../components/DataTable/DataTable";
 export default {
-    components: {datatable},
-    data() {
-        return {
-            loading: false,
-            users:[],
-            action:{},
-            columndata: [
-                {
-                    label: "No",
-                    field: "no",
-                    numeric: true,
-                    html: false,
-                },
-                {
-                    label: "Photo",
-                    field: "photo",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "First Name",
-                    field: "fname",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "Last Name",
-                    field: "lname",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "Email",
-                    field: "email",
-                    numeric: false,
-                    html: false,
-                },
-                {
-                    label: "Bio",
-                    field: "bio",
-                    numeric: false,
-                    html: false,
-                },
-                {
-                    label: "StyleOfCooking",
-                    field: "styleOfCooking",
-                    numeric: false,
-                    html: false,
-                },
-                {
-                    label: "TypeOfProfessional",
-                    field: "typeOfProfessional",
-                    numeric: false,
-                    html: false,
-                },
-                {
-                    label: "Location",
-                    field: "location",
-                    numeric: false,
-                    html: false,
-                },
-                {
-                    label: "State",
-                    field: "active",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "Action",
-                    field: "delete",
-                    numeric: false,
-                    html: true,
-                },
-            ],
-            selectedUser:{},
-        }
+  components: {},
+  data() {
+    return {
+      loading: false,
+      items: [],
+      bootstrapTable: {
+        selected: [],
+        selectMode: "single",
+        fields: [
+          {
+            key: "no",
+            label: "No",
+            sortable: true,
+            sortDirection: "desc",
+            tdClass: "list-item-heading",
+          },
+          { key: "name", label: "Name", sortable: true },
+          { key: "style", label: "Style", sortable: true },
+          { key: "action", label: "Action" },
+        ],
+      },
+      currentPage: 1,
+      perPage: 10,
+      totalRows: 0,
+      item: {
+        id: -1,
+        name: "",
+        style: false,
+        sort: 1,
+      },
+      item_id: -1,
+    };
+  },
+
+  computed: {
+    ...mapGetters({
+      currentUser: "currentUser",
+    }),
+  },
+
+  methods: {
+    getData() {
+      let url = `admin/get_types`;
+      let model = {
+        page: this.currentPage,
+      };
+      this.loading = true;
+      webServices
+        .post(url, JSON.stringify(model), {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.currentUser.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            let items = response.data.data.items;
+            this.totalRows = response.data.data.total;
+            items.forEach((item, index) => {
+              this.$set(
+                item,
+                "no",
+                index + 1 + (this.currentPage - 1) * this.perPage
+              );
+            });
+            this.items = items;
+          }
+        })
+        .catch((error) => {
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
 
-    computed: {
-        ...mapGetters({
-        currentUser: "currentUser",
-        }),
+    rowSelected(items) {
+      this.bootstrapTable.selected = items;
     },
 
-    methods: {
-        getUsers(){
-            let url = "admin/get_users";
-            this.loading = true;
-            webServices
-            .get(url, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${this.currentUser.token}`,
-                },
-            })
-            .then((response) => {
-                if (response.data.success) {
-                    let users = response.data.data;
-                    users.forEach((item, index) => {
-                        this.$set(item, "no", index + 1);
-                        var photo = `<img src="${item.photo}" alt="No Image" class="img-thumbnail border-0 rounded-circle list-thumbnail align-self-center xsmall">`;
-                        this.$set(item, "photo", photo);
-                        let temp = "";
-                        if (item.active == 1)
-                            temp = `<button class="btn btn-warning" target_id="${item.id}" action="activate">Deactivate</button>`
-                        else
-                            temp = `<button class="btn btn-success" target_id="${item.id}" action="activate">Activate</button>`;
-                        this.$set(item, "active", temp);
+    deleteItem(item, index) {
+      let id = item.id;
+      let model = {
+        id: id,
+      };
 
-                        temp = `<button class="btn btn-danger" target_id="${item.id}" action="delete">Delete</button>`;
-                        this.$set(item, "delete", temp);
-                    });
-
-                    this.users = users;
-                }
-                this.loading = false;
-            })
-            .catch((error) => {this.loading = false;});
-        },
+      let url = `admin/delete_type`;
+      this.loading = true;
+      webServices
+        .post(url, JSON.stringify(model), {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.currentUser.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            this.addNotification("success filled", "Success", "Type Deleted");
+            this.getData();
+          }
+        })
+        .catch((error) => {
+          this.addNotification(
+            "error filled",
+            "Error",
+            "Type delete failed."
+          );
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
 
-    mounted() {
-        
+    editItem(item, index) {
+      this.item = { ...item };
+      this.$refs["modalbasic"].show();
     },
 
-    beforeMount() {
-        this.getUsers();
+    newItem() {
+      let temp = {
+        id: -1,
+        name: "",
+        style: false,
+        sort: 1,
+      };
+      this.item = temp;
+      this.$refs["modalbasic"].show();
     },
 
-    watch: {
-        action:function(newVal){
-            if (newVal.id != null) {
-                let id = newVal.id;
-                let action = newVal.action;
-                if (action === "delete"){
-                    const model = {
-                        user_id: id,
-                    };
-                    let url = "admin/remove_user";
-                    this.loading = true;
-                    webServices
-                    .post(url, JSON.stringify(model), {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${this.currentUser.token}`,
-                        },
-                    })
-                    .then((response) => {
-                        if (response.data.success) {
-                            this.$notify("success", "User deleted", "User deleted", {
-                                duration: 3000,
-                                permanent: false,
-                            });
-                            this.users = this.users.filter(user=>user.id != id);
-                        }
-                    })
-                    .catch((error) => {this.loading = false;});
+    hideModal() {
+      let temp = {
+        id: -1,
+        category_id: this.category_id,
+        name: "",
+        cal: 0,
+        carbs: 0,
+        fat: 0,
+        protein: 0,
+        fiber: 0,
+      };
+      this.calory = temp;
+      this.$refs["modalbasic"].hide();
+    },
 
-                }else if(action === 'activate'){
-                    const model = {
-                        user_id: id,
-                    };
+    saveItem() {
+      if (this.item.name == "") {
+        this.addNotification(
+          "error filled",
+          "Error",
+          "Please input item name."
+        );
+        return;
+      }
+      let url = `admin/save_type`;
+      this.loading = true;
+      webServices
+        .post(url, JSON.stringify(this.item), {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.currentUser.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            this.addNotification("success filled", "Success", "Item Saved");
+            this.getData();
+          }
+        })
+        .catch((error) => {
+          this.addNotification("error filled", "Error", "Item save failed.");
+        })
+        .finally(() => {
+          this.loading = false;
+          this.hideModal();
+        });
+    },
 
-                    let currentUser = null;
-                    this.users.forEach(user => {
-                        if(user.id == id){
-                            currentUser = user;
-                            return;
-                        }
-                    });
+    addNotification(
+      type = "success",
+      title = "This is Notify Title",
+      message = "This is Notify Message,<br>with html."
+    ) {
+      this.$notify(type, title, message, { duration: 3000, permanent: false });
+    },
+  },
 
-                    let url = "admin/active_user";
-                    this.loading = true;
-                    webServices
-                    .post(url, JSON.stringify(model), {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${this.currentUser.token}`,
-                        },
-                    })
-                    .then((response) => {
-                        if (response.data.success) {
-                            this.$notify("success", "User activate status changed", "User activate status changed", {
-                                duration: 3000,
-                                permanent: false,
-                            });
-                            let user = response.data.data;
-                            let tableData = this.users;
-                            tableData.map((item) => {
-                                if (item.id == user.id){
-                                    let temp = "";
-                                    if (user.active)
-                                       temp = `<button class="btn btn-warning" target_id="${item.id}" action="activate">Deactivate</button>`
-                                    else
-                                        temp = `<button class="btn btn-success" target_id="${item.id}" action="activate">Activate</button>`;
-                                    this.$set(item, "active", temp);
-                                }
-                               
-                            });
-                            this.users = tableData;
-                        }
-                    })
-                    .catch((error) => {this.loading = false;});
+  mounted() {},
 
-                }
-            }
-        }
-    }
-}
+  beforeMount() {
+    this.getData();
+  },
+
+  watch: {
+    currentPage() {
+      this.getData();
+    },
+  },
+};
 </script>

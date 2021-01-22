@@ -22,7 +22,6 @@ class UserController extends Controller
     use ImageOperation;
     use CommonHelper;
 
-
     public function __construct()
     {
     }
@@ -661,4 +660,6 @@ class UserController extends Controller
             'data'=>'',
         ]);
     }
+
+
 }

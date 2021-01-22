@@ -93,24 +93,66 @@ class AdminController extends Controller
         ]);
     }
 
-
-    public function getTypeNamesFromIds($ids){
-        $data = array();
-        foreach($ids as $id){
-            $type = Type::find($id);
-            array_push($data, $type->name);
-        }
-        return $data;
+    public function getTypes(Request $request){
+        $page = $request->page;
+        $total = Type::orderBy('id')->get()->count();
+        $types = Type::orderBy('id')
+                ->skip(10*($page-1))
+                ->take(10)
+                ->get();
+        $data['total'] = $total;
+        $data['items'] = $types;
+        return response()->json([
+            'success'=>true, 
+            'data'=> $data
+        ]);
     }
 
-    public function getStyleNamesFromIds($ids){
-        $data = array();
-        foreach($ids as $id){
-            $type = CookingStyle::find($id);
-            array_push($data, $type->name);
-        }
-        return $data;
+    public function saveType(Request $request){
+        $all = $request->all();
+        $type = Type::updateOrCreate(['id' => $all['id']], $all);
+
+        $notification = array(
+            'title' => "New Professional Types Added", 
+            'body' => "You received new type from admin"
+        );
+
+        $notificationData = array(
+            "type" => 'new-type',
+        );
+
+        $this->sendNotificationToUsers($notification, $notificationData);
+        return response()->json([
+            'success'=>true, 
+        ]);
     }
+
+    public function deleteType(Request $request){
+        $type_id = $request->input('id');
+
+        $notification = array(
+            'title' => "Professional Types Removed", 
+            'body' => "Your received type removed signal from admin"
+        );
+
+        $notificationData = array(
+            "type" => 'new-type',
+        );
+        Type::find($type_id)->delete();
+        $users = User::whereIn('role', [0, 1])->get();
+        foreach($users as $user){
+            $typeOfProfessional = $user->typeOfProfessional;
+            $typeOfProfessional = $this->removeValueFromArray($type_id, $typeOfProfessional);
+            $user->typeOfProfessional = $typeOfProfessional;
+            $user->save();
+        }
+        $this->sendNotificationToUsers($notification, $notificationData);
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    
 
     public function getUsers(Request $request){
         $users = User::where('role', '!=', 2)->get();
@@ -219,4 +261,56 @@ class AdminController extends Controller
             'data'=>$recipe
         ]);
     }
+
+    public function sendNotificationToUsers($notification, $notificationData)
+    {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $users = User::whereIn('role', [0, 1])->get();
+        foreach($users as $user){
+            $device_token = $user->device_token;
+            if(!is_null($device_token)){
+                $fields = array(
+                    'to' => $device_token,
+                    'notification' => $notification,
+                    'data' => $notificationData
+                );
+    
+                $headers = array(
+                    'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+                    'Content-type: Application/json'
+                );
+                $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+            }
+        }
+    }
+
+    public function removeValueFromArray($target, $array)
+    {
+        $result = array();
+        foreach ($array as $value) {
+            if($value != $target){
+                array_push($result, $value);
+            }
+        }
+        return $result;
+    }
+
+    public function getTypeNamesFromIds($ids){
+        $data = array();
+        foreach($ids as $id){
+            $type = Type::find($id);
+            array_push($data, $type->name);
+        }
+        return $data;
+    }
+
+    public function getStyleNamesFromIds($ids){
+        $data = array();
+        foreach($ids as $id){
+            $type = CookingStyle::find($id);
+            array_push($data, $type->name);
+        }
+        return $data;
+    }
+
 }

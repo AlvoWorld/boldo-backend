@@ -26,17 +26,17 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('types')->insert([
-           ['name' => "Chef", 'sort' => 0, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Pastry Chef", 'sort' => 1, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Baker", 'sort' => 2, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Caterer", 'sort' => 3, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Bartender", 'sort' => 4, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Mixologist", 'sort' => 5, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Sommelier", 'sort' => 6, 'created_at' => now(), 'updated_at' => now()],
-           ['name' => "Wait Staff", 'sort' => 7, 'created_at' => now(),'updated_at' => now()],
+           ['name' => "Chef", 'sort' => 0, 'style' =>true, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Pastry Chef", 'sort' => 1, 'style' =>false, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Baker", 'sort' => 2,  'style' =>false, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Caterer", 'sort' => 3, 'style' =>true, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Bartender", 'sort' => 4, 'style' =>false, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Mixologist", 'sort' => 5, 'style' =>false, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Sommelier", 'sort' => 6, 'style' =>false, 'created_at' => now(), 'updated_at' => now()],
+           ['name' => "Wait Staff", 'sort' => 7, 'style' =>false, 'created_at' => now(),'updated_at' => now()],
         ]);
 
-        DB::table('cooking_styles')->insert([
+        DB::table('styles')->insert([
             ['name' => "American", 'sort' => 0, 'created_at' => now(), 'updated_at' => now()],
             ['name' => "Asian Fusion", 'sort' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['name' => "Cajun", 'sort' => 3, 'created_at' => now(), 'updated_at' => now()],
