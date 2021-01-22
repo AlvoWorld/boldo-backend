@@ -143,10 +143,7 @@ class UserController extends Controller
         if($request->get('photo') != "" && !str_contains($request->get('photo'), "http")){
             $image=$this->uploadImage($request->get('photo'),"logo", "user");
             $all['photo'] = url("/uploads/logo/".$image);
-        }else{
-            $all['photo'] = url("/uploads/logo/default.png");
         }
-
         $user->update($all);
         History::where('user_id', $user->id)->delete();
 
