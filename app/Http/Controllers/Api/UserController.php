@@ -159,11 +159,17 @@ class UserController extends Controller
         $email = $request->email;
         $password = $request->password;
         $token = "";
-        if (Auth::attempt(['email' => $email, 'password' => $password, 'active' =>true])) {
+        if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
+            if($user->active == false){
+                return response()->json([
+                    'success'=>false, 
+                    'message'=>'You are not available for this app, please contact with admin.'
+                ], 401);
+            }
+
             $success['token'] =  $user->createToken($user->id)->accessToken;
             $success['user'] =  $user;
-            
             return response()->json([
                 'success'=>true, 
                 "data" => $success, 
@@ -172,7 +178,7 @@ class UserController extends Controller
         }
         return response()->json([
             'success'=>false, 
-            'message'=>'Unauthorised'
+            'message'=>'Email or password is not correct, please retry.'
         ], 401);
     }
 
