@@ -17,6 +17,7 @@ Route::Group(['namespace'=>'Api'],function (){
     Route::post('register', 'UserController@register');
     Route::post('login', 'UserController@login' );
     Route::get('get_tyles_styles', 'UserController@getTypsAndStyles'); 
+    Route::post('remove_photo', 'UserController@removePhoto');
 
 });
 
@@ -62,15 +63,10 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('set_block', 'UserController@setBlock');
     Route::post('get_blocks', 'UserController@getBlocks');
     Route::post('remove_block', 'UserController@removeBlock');
-
-
-
-    Route::post('send_connect', 'UserController@sendConnect' );
-    Route::post('get_pendings', 'UserController@getPendings' );
-    Route::post('remove_pending', 'UserController@removePending' );
-    Route::post('get_badge', 'UserController@getBadge');
-    Route::post('get_connections', 'UserController@getConnections');
-    Route::post('apply_pending', 'UserController@applyPending');
-    Route::post('get_profile', 'UserController@getProfile');
     Route::post('send_message', 'UserController@sendMessage');
+    Route::post('get_message', 'UserController@getMessage');
+    Route::post('delete_message', 'UserController@deleteMessage');
+    Route::post('get_one_message', 'UserController@getOneMessage');
+    Route::post('read_all_message', 'UserController@readAllMessage');
+    Route::post('upload_chat_image', 'UserController@uploadChatImage');
 });

@@ -1,6 +1,7 @@
 <?php
    
 namespace App\Http\Controllers\Api;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -15,6 +16,7 @@ use App\Models\Chat;
 use App\Models\Type;
 use App\Models\Style;
 use App\Traits\ImageOperation;
+use File; 
 use DB;
 use App\Traits\CommonHelper;
 
@@ -27,20 +29,22 @@ class UserController extends Controller
     {
     }
 
-    public function getTypsAndStyles(Type $var = null){
+    public function getTypsAndStyles(Type $var = null)
+    {
         $types = Type::select('id', 'name', 'style')->orderBy('sort')->get();
         $styles = Style::select('id', 'name')->orderBy('sort')->get();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             "types"=>$types,
             "styles"=>$styles
         ]);
     }
 
-    public function register(Request $request){
+    public function register(Request $request)
+    {
         $fname = $request->fname;
         $lname = $request->lname;
-        if(is_null($lname)){
+        if (is_null($lname)) {
             $lname = "";
         }
         $email = $request->email;
@@ -85,19 +89,19 @@ class UserController extends Controller
         } else {
             $user->typeOfProfessional = array();
             $user->styleOfCooking = array();
-        }   
+        }
 
         $user->postalCode = $postalCode;
-        if($request->get('photo64') != ""){
-            $image=$this->uploadImage($request->get('photo64'),"logo", "user");
+        if ($request->get('photo64') != "") {
+            $image=$this->uploadImage($request->get('photo64'), "logo", "user");
             $user->photo = url("/uploads/logo/".$image);
-        }else{
+        } else {
             $user->photo = url("/uploads/logo/default.png");
         }
        
         $user->save();
-        if($user->role == 1){
-            for($i = 0; $i < count($histories); $i ++){
+        if ($user->role == 1) {
+            for ($i = 0; $i < count($histories); $i ++) {
                 $history = $histories[$i];
                 $history['user_id'] = $user->id;
                 History::create($history);
@@ -105,21 +109,22 @@ class UserController extends Controller
         }
       
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             "data"=>''
         ], 200);
     }
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $email = $request->email;
         $password = $request->password;
         $token = "";
         if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
             $user->histories;
-            if($user->active == false){
+            if ($user->active == false) {
                 return response()->json([
-                    'success'=>false, 
+                    'success'=>false,
                     'message'=>'You are not available for this app, please contact with admin.'
                 ], 401);
             }
@@ -127,18 +132,19 @@ class UserController extends Controller
             $success['token'] =  $user->createToken($user->id)->accessToken;
             $success['user'] =  $user;
             return response()->json([
-                'success'=>true, 
-                "data" => $success, 
+                'success'=>true,
+                "data" => $success,
                 'message'=>"login success"
             ]);
         }
         return response()->json([
-            'success'=>false, 
+            'success'=>false,
             'message'=>'Email or password is not correct.'
         ], 401);
     }
 
-    public function getUserPosts(Request $request){
+    public function getUserPosts(Request $request)
+    {
         $id = $request->input('id');
         $posts = Post::where('user_id', $id)->orderBy('id', 'desc')->get();
         return response()->json([
@@ -147,19 +153,21 @@ class UserController extends Controller
         ]);
     }
 
-    public function signOut(Request $request){
+    public function signOut(Request $request)
+    {
         $id = $request->input('id');
         $user = User::find($id);
-        $user->device_token = NULL;
+        $user->device_token = null;
         $user->save();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
-    public function getPosts(Request $request){
+    public function getPosts(Request $request)
+    {
         $posts = Post::where('active', true)->orderBy('id', 'desc')->get();
-        foreach($posts as $post){
+        foreach ($posts as $post) {
             $post->user;
             $post['user']['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($post['user']['typeOfProfessional']);
         }
@@ -170,16 +178,17 @@ class UserController extends Controller
         ]);
     }
 
-    public function uploadPost(Request $request){
+    public function uploadPost(Request $request)
+    {
         $id = $request->input('id');
-        $image=$this->uploadImage($request->get('photo'),"post", "post");
+        $image=$this->uploadImage($request->get('photo'), "post", "post");
         $image = url("/uploads/post/".$image);
 
 
         $post = Post::create(['user_id' => $id , 'photo' => $image, 'content' =>$request->input('content')]);
         
         $notification = array(
-            'title' => "New Post Received", 
+            'title' => "New Post Received",
             'body' => "You received new post"
         );
 
@@ -193,21 +202,23 @@ class UserController extends Controller
         ]);
     }
 
-    public function deletePost(Request $request){
+    public function deletePost(Request $request)
+    {
         $id = $request->input('id');
         Post::find($id)->delete();
         Report::where('post_id', $id)->delete();
         return response()->json([
             'success'=>true,
-            'data'=>'' 
+            'data'=>''
         ]);
     }
 
-    public function sendReport(Request $request){
+    public function sendReport(Request $request)
+    {
         $id = $request->id;
         $user_id = $request->user_id;
         $content = $request->reason;
-        Report::create(['user_id' => $user_id , 
+        Report::create(['user_id' => $user_id ,
         'post_id' => $id, 'content' =>$content]);
 
         return response()->json([
@@ -216,29 +227,31 @@ class UserController extends Controller
         ]);
     }
 
-    public function updateToken(Request $request){
+    public function updateToken(Request $request)
+    {
         $id = $request->input('id');
         $device_token = $request->input('token');
         $user = User::find($id);
         $user->device_token = $device_token;
         $user->save();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
-    public function updateProfile(Request $request){
+    public function updateProfile(Request $request)
+    {
         $id = $request->id;
         $all = $request->all();
         $user = User::find($id);
-        if($request->get('photo') != "" && !str_contains($request->get('photo'), "http")){
-            $image=$this->uploadImage($request->get('photo'),"logo", "user");
+        if ($request->get('photo') != "" && !str_contains($request->get('photo'), "http")) {
+            $image=$this->uploadImage($request->get('photo'), "logo", "user");
             $all['photo'] = url("/uploads/logo/".$image);
         }
         $all['password'] = bcrypt($all['password']);
         $user->update($all);
         History::where('user_id', $user->id)->delete();
-        foreach($all['histories'] as $history){
+        foreach ($all['histories'] as $history) {
             $history['user_id'] = $user->id;
             History::create($history);
         }
@@ -248,27 +261,30 @@ class UserController extends Controller
         ]);
     }
 
-    public function getTypeNamesFromIds($ids){
+    public function getTypeNamesFromIds($ids)
+    {
         $data = array();
-        foreach($ids as $id){
+        foreach ($ids as $id) {
             $type = Type::find($id);
             array_push($data, $type->name);
         }
         return $data;
     }
 
-    public function getStyleNamesFromIds($ids){
+    public function getStyleNamesFromIds($ids)
+    {
         $data = array();
-        foreach($ids as $id){
+        foreach ($ids as $id) {
             $type = Style::find($id);
             array_push($data, $type->name);
         }
         return $ids;
     }
 
-    public function getRecipes(Request $request){
+    public function getRecipes(Request $request)
+    {
         $recipes = Recipe::where('active', true)->orderBy('id', 'desc')->orderBy('count', 'desc')->get();
-        foreach($recipes as $recipe){
+        foreach ($recipes as $recipe) {
             $recipe->reviews;
             $recipe->user;
         }
@@ -278,17 +294,18 @@ class UserController extends Controller
         ]);
     }
 
-    public function uploadRecipe(Request $request){
+    public function uploadRecipe(Request $request)
+    {
         $id = $request->input('id');
         $title = $request->input('title');
         $content = $request->input('content');
 
-        $image=$this->uploadImage($request->get('photo'),"recipe", "recipe");
+        $image=$this->uploadImage($request->get('photo'), "recipe", "recipe");
         $image = url("/uploads/recipe/".$image);
         $recipe = Recipe::create(['user_id' => $id , 'photo' => $image,'title' =>$title, 'content' =>$content]);
 
         $notification = array(
-            'title' => "New Recipe Received", 
+            'title' => "New Recipe Received",
             'body' => "You received new recipe"
         );
         $notificationData = array(
@@ -300,13 +317,15 @@ class UserController extends Controller
         ]);
     }
 
-    public function viewRecipe(Request $request){
+    public function viewRecipe(Request $request)
+    {
         $form = $request->all();
         $count = 1;
-        if(Review::where(['recipe_id' => $form['recipe_id'], 'user_id' => $form['user_id']])->get()->count() == 0){
+        if (Review::where(['recipe_id' => $form['recipe_id'], 'user_id' => $form['user_id']])->get()->count() == 0) {
             $recipe = Recipe::find($form['recipe_id']);
-            if(!is_null($recipe->count))
+            if (!is_null($recipe->count)) {
                 $count =  $recipe->count + 1;
+            }
             $recipe->count = $count;
             $recipe->save();
         }
@@ -316,21 +335,21 @@ class UserController extends Controller
         ]);
     }
 
-    public function getContacts(Request $request){
+    public function getContacts(Request $request)
+    {
         $id = $request->id;
         $rooms = Room::where('active', true)
-                ->where(function($query) use ($id) {
+                ->where(function ($query) use ($id) {
                     $query->where('user_id', $id)
                         ->orWhere('connect_id', $id);
                 })
                 ->orderBy('id', 'desc')->get();
 
         foreach ($rooms as $room) {
-            if($room->user_id == $id){
+            if ($room->user_id == $id) {
                 $user = User::find($room->connect_id);
                 $badge = Chat::where('room_id', $room->id)->where('read1', false)->get()->count();
-
-            }else{
+            } else {
                 $user = User::find($room->user_id);
                 $badge = Chat::where('room_id', $room->id)->where('read2', false)->get()->count();
             }
@@ -343,9 +362,10 @@ class UserController extends Controller
         ]);
     }
 
-    public function getPros(Request $request){
+    public function getPros(Request $request)
+    {
         $users = User::where('role', 1)->where('active', true)->orderBy('id')->get();
-        foreach($users as $user){
+        foreach ($users as $user) {
             $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
             $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
@@ -355,7 +375,8 @@ class UserController extends Controller
         ]);
     }
 
-    public function makeChatRoom(Request $request){
+    public function makeChatRoom(Request $request)
+    {
         $user_id = $request->user_id;
         $connect_id = $request->connect_id;
         $all = $request->all();
@@ -368,13 +389,14 @@ class UserController extends Controller
         ]);
     }
 
-    public function setBlock(Request $request){
+    public function setBlock(Request $request)
+    {
         $room_id = $request->room_id;
         $user_id = $request->user_id;
         $room = Room::find($room_id);
-        if($room->user_id == $user_id){
+        if ($room->user_id == $user_id) {
             $room->block1 = true;
-        }else{
+        } else {
             $room->block2 = true;
         }
         $room->active = false;
@@ -384,21 +406,21 @@ class UserController extends Controller
         ]);
     }
 
-    public function getBlocks(Request $request){
+    public function getBlocks(Request $request)
+    {
         $user_id = $request->user_id;
         $rooms = Room::where('active', false)
-                ->where(function($query) use ($user_id) {
+                ->where(function ($query) use ($user_id) {
                     $query->where('user_id', $user_id)
                         ->orWhere('connect_id', $user_id);
                 })
                 ->orderBy('id', 'desc')->get();
 
         foreach ($rooms as $room) {
-            if($room->user_id == $user_id){
+            if ($room->user_id == $user_id) {
                 $user = User::find($room->connect_id);
                 $badge = Chat::where('room_id', $room->id)->where('read1', false)->get()->count();
-
-            }else{
+            } else {
                 $user = User::find($room->user_id);
                 $badge = Chat::where('room_id', $room->id)->where('read2', false)->get()->count();
             }
@@ -411,13 +433,14 @@ class UserController extends Controller
         ]);
     }
 
-    public function removeBlock(Request $request){
+    public function removeBlock(Request $request)
+    {
         $user_id = $request->user_id;
         $room_id = $request->room_id;
         $room = Room::find($room_id);
-        if($room->user_id == $user_id){
+        if ($room->user_id == $user_id) {
             $room->block1 = false;
-        }else{
+        } else {
             $room->block2 = false;
         }
         $room->active = true;
@@ -427,244 +450,164 @@ class UserController extends Controller
         ]);
     }
 
+    public function getMessage(Request $request)
+    {
+        $room_id = $request->input('room_id');
+        $page = $request->input('page');
 
-
-
-
-
-
-
-
-
-
-
-
-    public function getPendings(Request $request){
-        $id = $request->input('id');
-        $pendings = Pending::where([['user_id',  $id], ['state', 0]])
+        $chats = Chat::where('room_id', $room_id)
+        ->orderBy('id', 'desc')
         ->get();
-        foreach($pendings as $pending){
-            $pending->userPending;
-            $pending['userPending']['typeOfProfessional'] = $this->getTypeNamesFromIds($pending['userPending']['typeOfProfessional']);
+
+        $data = array();
+        foreach ($chats as $chat) {
+            $content = $chat->content;
+            $content->chat_id = $chat->id;
+            array_push($data, $content);
         }
+
         return response()->json([
             'success'=>true,
-            'pendings'=>$pendings
+            'data' => $data
         ]);
     }
 
-    public function sendConnect(Request $request){
-        $id = $request->input('id');
-        $send_user = User::find($id);
+    public function sendMessage(Request $request)
+    {
         $user_id = $request->input('user_id');
-        $pending = Pending::create(['user_id' => $id , 'connect_id'=>$user_id, 'state'=>0]);
-
-        $user = User::find($user_id);
-        $url = 'https://fcm.googleapis.com/fcm/send';
-        $device_token = $user->device_token;
-
-        $notification = array(
-            'title' => "New Connection Comming", 
-            'body' => "You received connection from ".$send_user->fname
-        );
-
-        $fields = array(
-            'to' => $device_token,
-            'notification' => $notification,
-            'data' => array(
-                "type" => 'receive-pending',
-                "user_id" => $send_user->id
-            ),
-        );
-
-        $headers = array(
-            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
-            'Content-type: Application/json'
-        );
-
-        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
-
-
-        return response()->json([
-            'success'=>true,
-            'pending'=>$pending
-        ]);
-    }
-
-    public function removePending(Request $request){
-        $id = $request->input('id');
-        $user_id = $request->input('user_id');
-
-
-        $pending = Pending::find($id);
-        $pending->chatroom()->delete();
-
-        $send_user = User::find($pending->user_id);
-        $connect_user = User::find($pending->connect_id);
-        $url = 'https://fcm.googleapis.com/fcm/send';
-        $device_token = $send_user->device_token;
-
-        $notification = array(
-            'title' => "Connection canceled", 
-            'body' => "Your connection canceled by ".$connect_user->fname
-        );
-
-        $fields = array(
-            'to' => $device_token,
-            'notification' => $notification,
-            'data' => array(
-                "type" => 'remove-pending',
-                "user_id" => $send_user->id
-            ),
-        );
-
-        $headers = array(
-            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
-            'Content-type: Application/json'
-        );
-
-        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
-        $pending->delete();
-        return response()->json([
-            'success'=>true,
-        ]);
-    }
-
-    public function applyPending(Request $request){
-        $id = $request->input('id');
-        $pending = Pending::find($id);
-        $pending->state = 1;
-        $pending->save();
-
-        $room = 'room'.time();
-        $all = array('pending_id'=>$pending->id,  'room'=>$room, 'state1'=>1, 'state2'=>1);
-        ChatRoom::create($all);
-
-        $send_user = User::find($pending->user_id);
-        $connect_user = User::find($pending->connect_id);
-        $url = 'https://fcm.googleapis.com/fcm/send';
-        $device_token = $send_user->device_token;
-
-        $notification = array(
-            'title' => "Connection Accepted", 
-            'body' => "Your connection accepted by ".$connect_user->fname
-        );
-
-        $fields = array(
-            'to' => $device_token,
-            'notification' => $notification,
-            'data' => array(
-                "type" => 'apply-pending',
-                "user_id" => $connect_user->id
-            ),
-        );
-
-        $headers = array(
-            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
-            'Content-type: Application/json'
-        );
-
-        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
-        return response()->json([
-            'success'=>true,
-        ]);
-    }
-
-    public function getBadge(Request $request){
-        $id = $request->input('id');
-        $badge = Pending::where(['connect_id'=> $id, 'state'=>0])->count();
-        return response()->json([
-            'success'=>true,
-            'badge'=>$badge
-        ]);
-    }
-
-    public function getConnections(Request $request){
-        $id = $request->input('id');
-        $users = Pending::where(['connect_id'=> $id, 'state'=>0])->get();
-        foreach($users as $user){
-            $user->user;
-            $user['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($user['user']['typeOfProfessional']);
-        }
-        return response()->json([
-            'success'=>true,
-            'users'=>$users
-        ]);
-    }
-
-    public function getProfile(Request $request){
-        $id = $request->id;
-        $user = User::find($id);
-        $user ->histories;
-
-        return response()->json([
-            'success'=>true,
-            'data'=>$user
-        ]);
-    }
-
-
-
-    public function sendMessage(Request $request){
-        $user_id = $request->input('user_id');
-        $id = $request->input('id');
+        $receive_id = $request->input('receive_id');
+        $room_id = $request->input('room_id');
         $message = $request->input('message');
-        $room = $request->input('room');
-
-        $chatroom = ChatRoom::where('room', $room)->first();
-        if(is_null($chatroom)){
+        
+        $room = Room::find($room_id);
+        if ($room->active == false) {
             return response()->json([
                 'success'=>false,
-                'data' =>''
             ]);
-        }else{
-            if($chatroom->state1 == 0 || $chatroom->state2 == 0){
-                return response()->json([
-                    'success'=>false,
-                    'data' =>''
-                ]);
-            }
         }
 
-        $user = User::find($user_id);
-        $from = User::find($id);
-
-        $url = 'https://fcm.googleapis.com/fcm/send';
-        $device_token = $user->device_token;
+        $send_user = User::find($user_id);
+        $receive_user = User::find($receive_id);
+        if ($user_id == $room->user_id) {
+            $read1 = true;
+            $read2 = false;
+        } else {
+            $read2 = true;
+            $read1 = false;
+        }
+        $chat = Chat::create(['room_id'=>$room_id, 'read1'=>$read1, 'read2'=>$read2, 'content'=>$message]);
+        
 
         $notification = array(
-            'title' => "From: ". $from->fname, 
-            'body' => $message,
+            'title' => $send_user->fname,
+            'body' => $message['text']
         );
 
-        $fields = array(
-            'to' => $device_token,
-            'notification' => $notification,
-            'data' => array(
-                "type" => 'new-message',
-                "room" => $room
-            ),
+        $notificationData = array(
+            "type" => 'new-message',
+            "chat" => $chat->id,
+            "room" => $room->id,
+            "text" => $message['text'],
+            "name" => $send_user->fname,
         );
-
-        $headers = array(
-            'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
-            'Content-type: Application/json'
-        );
-
-        $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+        $this->sendNotificationToUser($receive_id, $notification, $notificationData);
+        
         return response()->json([
             'success'=>true,
-            'data'=>'',
         ]);
+    }
+
+    public function deleteMessage(Request $request){
+        $id = $request->id;
+        Chat::find($id)->delete();
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+    public function getOneMessage(Request $request){
+        $id = $request->id;
+        $chat = Chat::find($id);
+        if($chat->read1 == true && $chat->read2 == true){
+            return;
+        }
+        $chat->read1 = true;
+        $chat->read2 = true;
+        $chat->save();
+        return response()->json([
+            'success'=>true,
+            'data'=>$chat->content,
+        ]);
+    }
+
+    public function readAllMessage(Request $request){
+        $user_id = $request->user_id;
+        $room_id = $request->room_id;
+
+        $room = Room::find($room_id);
+        if ($user_id == $room->user_id) {
+            $field = 'read1';
+        } else {
+            $field = 'read2';
+
+        }
+        Chat::where('room_id', $room_id)->update([$field => true]);
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+    public function uploadChatImage(Request $request){
+        $image=$this->uploadImage($request->get('photo'), "chat", "chat");
+        $image = url("/uploads/chat/".$image);
+        return response()->json([
+            'success'=>true,
+            'data'=>$image,
+        ]);
+    }
+
+    public function removePhoto(Request $request){
+        $photo = $request->photo;
+        $this->deleteFile($photo);
+
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+    public function deleteFile($url){
+        $names = explode("uploads", $url);
+        $filename = "uploads".$names[1];
+        File::delete($filename);
+    }
+
+    public function sendNotificationToUser($user_id, $notification, $notificationData)
+    {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $user = User::find($user_id);
+        $device_token = $user->device_token;
+        if (!is_null($device_token)) {
+            $fields = array(
+                'to' => $device_token,
+                'notification' => $notification,
+                'data' => $notificationData
+            );
+
+            $headers = array(
+                'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+                'Content-type: Application/json'
+            );
+            $this->sendCurlRequest($url, 'post', json_encode($fields), $headers);
+        }
     }
 
     public function sendNotificationToUsers($notification, $notificationData)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $users = User::whereIn('role', [0, 1])->where('active', true)->get();
-        foreach($users as $user){
+        foreach ($users as $user) {
             $device_token = $user->device_token;
-            if(!is_null($device_token)){
+            if (!is_null($device_token)) {
                 $fields = array(
                     'to' => $device_token,
                     'notification' => $notification,
@@ -675,7 +618,7 @@ class UserController extends Controller
                     'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
                     'Content-type: Application/json'
                 );
-                $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+                $this->sendCurlRequest($url, 'post', json_encode($fields), $headers);
             }
         }
     }
