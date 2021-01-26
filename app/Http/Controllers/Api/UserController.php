@@ -327,11 +327,11 @@ class UserController extends Controller
 
         foreach ($rooms as $room) {
             if($room->user_id == $id){
-                $user = User::find($room->user_id);
+                $user = User::find($room->connect_id);
                 $badge = Chat::where('room_id', $room->id)->where('read1', false)->get()->count();
 
             }else{
-                $user = User::find($room->connect_id);
+                $user = User::find($room->user_id);
                 $badge = Chat::where('room_id', $room->id)->where('read2', false)->get()->count();
             }
             $room->user = $user;
@@ -360,6 +360,8 @@ class UserController extends Controller
         $connect_id = $request->connect_id;
         $all = $request->all();
         $room = Room::updateOrCreate(['user_id' => $user_id, 'connect_id' => $connect_id], $all);
+        $room->user = User::find($connect_id);
+        Chat::where('room_id', $room->id)->update(['read1'=> true]);
         return response()->json([
             'success'=>true,
             'data'=>$room
@@ -371,9 +373,9 @@ class UserController extends Controller
         $user_id = $request->user_id;
         $room = Room::find($room_id);
         if($room->user_id == $user_id){
-            $room->block1 = false;
+            $room->block1 = true;
         }else{
-            $room->block2 = false;
+            $room->block2 = true;
         }
         $room->active = false;
         $room->save();
@@ -392,12 +394,12 @@ class UserController extends Controller
                 ->orderBy('id', 'desc')->get();
 
         foreach ($rooms as $room) {
-            if($room->user_id == $id){
-                $user = User::find($room->user_id);
+            if($room->user_id == $user_id){
+                $user = User::find($room->connect_id);
                 $badge = Chat::where('room_id', $room->id)->where('read1', false)->get()->count();
 
             }else{
-                $user = User::find($room->connect_id);
+                $user = User::find($room->user_id);
                 $badge = Chat::where('room_id', $room->id)->where('read2', false)->get()->count();
             }
             $room->user = $user;
@@ -412,12 +414,13 @@ class UserController extends Controller
     public function removeBlock(Request $request){
         $user_id = $request->user_id;
         $room_id = $request->room_id;
-        $room = Room::find($id);
+        $room = Room::find($room_id);
         if($room->user_id == $user_id){
-            $room->block1 = true;
+            $room->block1 = false;
         }else{
-            $room->block2 = true;
+            $room->block2 = false;
         }
+        $room->active = true;
         $room->save();
         return response()->json([
             'success'=>true,

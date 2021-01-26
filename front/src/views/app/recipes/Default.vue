@@ -1,214 +1,238 @@
 <template>
-<div>
+  <div>
     <b-row>
       <b-colxx xxs="12">
-        <h1>Registered Recipes</h1>
-      </b-colxx>
-    </b-row>
-    <b-row>
-      <b-colxx xxs="12" md="12" xl="12" lg="12" class="col-left">
-        <b-card class="mb-4" no-body>
-          <datatable
-            title="Registered Recipes"
-            :rows="recipes"
-            :columns="columndata"
-            v-model="action"
-          ></datatable>
+        <b-card class="mb-4" title="Uploaded Recipes" v-if="!loading">
+          <b-table
+            ref="custom-table"
+            class="vuetable"
+            sort-by="title"
+            sort-desc.sync="false"
+            @row-selected="rowSelected"
+            selectable
+            :select-mode="bootstrapTable.selectMode"
+            :current-page="currentPage"
+            selectedVariant="primary"
+            :fields="bootstrapTable.fields"
+            :items="items"
+          >
+            <template #cell(photo)="row">
+              <img
+                :src="row.item.photo"
+                alt="No Image"
+                style="width: 50px !important; height: 50px !important"
+                class="img-thumbnail border-0 list-thumbnail align-self-center xsmall"
+              />
+            </template>
+            <template #cell(action)="row">
+              <b-button
+                @click="deleteItem(row.item, row.index, $event.target)"
+                size="sm"
+                class="icon-button mb-1"
+                variant="danger default"
+                ><i class="simple-icon-trash"></i
+              ></b-button>
+            </template>
+            <template #cell(active)="row">
+              <b-button
+                @click="editItem(row.item, row.index, $event.target)"
+                size="sm"
+                class="icon-button mb-1"
+                :variant="
+                  row.item.active == true ? 'danger default' : 'success default'
+                "
+                ><i
+                  :class="
+                    row.item.active == true
+                      ? 'simple-icon-bulb'
+                      : 'iconsminds-idea-2'
+                  "
+                ></i
+              ></b-button>
+            </template>
+          </b-table>
+          <b-pagination
+            size="sm"
+            align="center"
+            :total-rows="totalRows"
+            :per-page="perPage"
+            v-model="currentPage"
+          >
+            <template v-slot:next-text>
+              <i class="simple-icon-arrow-right" />
+            </template>
+            <template v-slot:prev-text>
+              <i class="simple-icon-arrow-left" />
+            </template>
+            <template v-slot:first-text>
+              <i class="simple-icon-control-start" />
+            </template>
+            <template v-slot:last-text>
+              <i class="simple-icon-control-end" />
+            </template>
+          </b-pagination>
         </b-card>
+        <div class="loading" v-else></div>
       </b-colxx>
     </b-row>
-</div>
+  </div>
 </template>
 
 <script>
 import webServices from "../../../webServices";
 import { mapGetters } from "vuex";
-import datatable from "../../../components/DataTable/DataTable";
 export default {
-    components: {datatable},
-    data() {
-        return {
-            loading: false,
-            recipes:[],
-            action:{},
-            columndata: [
-                {
-                    label: "No",
-                    field: "no",
-                    numeric: true,
-                    html: false,
-                },
-                {
-                    label: "Photo",
-                    field: "photo",
-                    numeric: false,
-                    html: true,
-                },
-                 {
-                    label: "User F Name",
-                    field: "user.fname",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "User L Name",
-                    field: "user.lname",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "User Email",
-                    field: "user.email",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "Title",
-                    field: "title",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "Content",
-                    field: "content",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "State",
-                    field: "active",
-                    numeric: false,
-                    html: true,
-                },
-                {
-                    label: "Action",
-                    field: "delete",
-                    numeric: false,
-                    html: true,
-                },
-            ],
-        }
+  components: {},
+  data() {
+    return {
+      loading: false,
+      items: [],
+      bootstrapTable: {
+        selected: [],
+        selectMode: "single",
+        fields: [
+          {
+            key: "no",
+            label: "No",
+            sortable: true,
+            sortDirection: "desc",
+            tdClass: "list-item-heading",
+          },
+          { key: "photo", label: "Photo", sortable: true },
+          { key: "user.fname", label: "FName", sortable: true },
+          { key: "user.lname", label: "LName", sortable: true },
+          { key: "title", label: "Title", sortable: true },
+          { key: "content", label: "Content", sortable: true },
+          { key: "active", label: "Active", sortable: true },
+          { key: "action", label: "Action" },
+        ],
+      },
+      currentPage: 1,
+      perPage: 10,
+      totalRows: 0,
+      item_id: -1,
+    };
+  },
+
+  computed: {
+    ...mapGetters({
+      currentUser: "currentUser",
+    }),
+  },
+
+  methods: {
+    getData() {
+      let url = `admin/get_recipes`;
+      let model = {
+        page: this.currentPage,
+      };
+      this.loading = true;
+      webServices
+        .post(url, JSON.stringify(model), {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.currentUser.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            let items = response.data.data.items;
+            this.totalRows = response.data.data.total;
+            items.forEach((item, index) => {
+              this.$set(
+                item,
+                "no",
+                index + 1 + (this.currentPage - 1) * this.perPage
+              );
+            });
+            this.items = items;
+          }
+        })
+        .catch((error) => {})
+        .finally(() => {
+          this.loading = false;
+        });
     },
 
-    computed: {
-        ...mapGetters({
-        currentUser: "currentUser",
-        }),
+    rowSelected(items) {
+      this.bootstrapTable.selected = items;
     },
 
-    methods: {
-        getPosts(){
-            let url = "admin/get_recipes";
-            this.loading = true;
-            webServices
-            .get(url, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${this.currentUser.token}`,
-                },
-            })
-            .then((response) => {
-                if (response.data.success) {
-                    let recipes = response.data.data;
-                    recipes.forEach((item, index) => {
-                        this.$set(item, "no", index + 1);
-                        var photo = `<img src="${item.photo}" alt="No Image" class="img-thumbnail border-0 list-thumbnail align-self-center">`;
-                        this.$set(item, "photo", photo);
-                        let temp = "";
-                        if (item.active == 1)
-                            temp = `<button class="btn btn-warning" target_id="${item.id}" action="activate">Deactivate</button>`
-                        else
-                            temp = `<button class="btn btn-success" target_id="${item.id}" action="activate">Activate</button>`;
-                        this.$set(item, "active", temp);
+    editItem(item, index) {
+      let id = item.id;
+      let model = {
+        id: id,
+      };
 
-                        temp = `<button class="btn btn-danger" target_id="${item.id}" action="delete">Delete</button>`;
-                        this.$set(item, "delete", temp);
-                    });
-
-                    this.recipes = recipes;
-                }
-                this.loading = false;
-            })
-            .catch((error) => {this.loading = false;});
-        },
+      let url = `admin/active_recipe`;
+      this.loading = true;
+      webServices
+        .post(url, JSON.stringify(model), {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.currentUser.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            item.active = response.data.data;
+          }
+        })
+        .catch((error) => {
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
 
-    mounted() {
-        
+    deleteItem(item, index) {
+      let id = item.id;
+      let model = {
+        id: id,
+      };
+
+      let url = `admin/remove_recipe`;
+      this.loading = true;
+      webServices
+        .post(url, JSON.stringify(model), {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.currentUser.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.success) {
+            this.addNotification("success filled", "Success", "Item Deleted");
+            this.getData();
+          }
+        })
+        .catch((error) => {
+          this.addNotification("error filled", "Error", "Item delete failed.");
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
 
-    beforeMount() {
-        this.getPosts();
+    addNotification(
+      type = "success",
+      title = "This is Notify Title",
+      message = "This is Notify Message,<br>with html."
+    ) {
+      this.$notify(type, title, message, { duration: 3000, permanent: false });
     },
+  },
 
-    watch: {
-        action:function(newVal){
-            if (newVal.id != null) {
-                let id = newVal.id;
-                let action = newVal.action;
-                if (action === "delete"){
-                    const model = {
-                        recipe_id: id,
-                    };
-                    let url = "admin/remove_recipe";
-                    this.loading = true;
-                    webServices
-                    .post(url, JSON.stringify(model), {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${this.currentUser.token}`,
-                        },
-                    })
-                    .then((response) => {
-                        if (response.data.success) {
-                            this.$notify("success", "User deleted", "User deleted", {
-                                duration: 3000,
-                                permanent: false,
-                            });
-                            this.recipes = this.recipes.filter(recipe=>recipe.id != id);
-                        }
-                    })
-                    .catch((error) => {this.loading = false;});
+  mounted() {},
 
-                }else if(action === 'activate'){
-                    const model = {
-                        recipe_id: id,
-                    };
+  beforeMount() {
+    this.getData();
+  },
 
-                    let url = "admin/active_recipe";
-                    this.loading = true;
-                    webServices
-                    .post(url, JSON.stringify(model), {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${this.currentUser.token}`,
-                        },
-                    })
-                    .then((response) => {
-                        if (response.data.success) {
-                            this.$notify("success", "User activate status changed", "User activate status changed", {
-                                duration: 3000,
-                                permanent: false,
-                            });
-                            let recipe = response.data.data;
-                            let tableData = this.recipes;
-                            tableData.map((item) => {
-                                if (item.id == recipe.id){
-                                    let temp = "";
-                                    if (recipe.active)
-                                       temp = `<button class="btn btn-warning" target_id="${item.id}" action="activate">Deactivate</button>`
-                                    else
-                                        temp = `<button class="btn btn-success" target_id="${item.id}" action="activate">Activate</button>`;
-                                    this.$set(item, "active", temp);
-                                }
-                            });
-                            this.recipe = tableData;
-                        }
-                    })
-                    .catch((error) => {this.loading = false;});
-                }
-            }
-        }
-    }
-}
+  watch: {
+    currentPage() {
+      this.getData();
+    },
+  },
+};
 </script>

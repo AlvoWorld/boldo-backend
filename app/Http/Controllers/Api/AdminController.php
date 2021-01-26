@@ -265,48 +265,65 @@ class AdminController extends Controller
     }
 
     public function getPosts(Request $request){
-        $posts = Post::orderBy('id')->get();
+        $page = $request->page;
+        $total = Post::orderBy('id')->get()->count();
+        $posts = Post::orderBy('id')
+                ->skip(10*($page-1))
+                ->take(10)
+                ->get();
+        $data['total'] = $total;
         foreach($posts as $post){
             $post->user;
         }
+        $data['items'] = $posts;
+
         return response()->json([
-            'success'=>true,
-            'data'=>$posts,
+            'success'=>true, 
+            'data'=> $data
         ]);
     }
 
     public function removePost(Request $request){
-        $post_id = $request->post_id;
+        $post_id = $request->id;
         $post = Post::find($post_id)->delete();
+        Report::where('post_id', $post_id)->delete();
         return response()->json([
             'success'=>true, 
         ]);
     }
 
     public function activePost(Request $request){
-        $post_id = $request->post_id;
+        $post_id = $request->id;
         $post = Post::find($post_id);
         $post->active = !$post->active;
         $post->save();
         return response()->json([
             'success'=>true, 
-            'data'=>$post
+            'data'=>$post->active
         ]);
     }
 
     public function getRecipes(Request $request){
-        $receipes = Recipe::get();
-        foreach($receipes as $receipe){
-            $receipe->user;
+        $page = $request->page;
+        $total = Recipe::orderBy('id')->get()->count();
+        $items = Recipe::orderBy('id')
+                ->skip(10*($page-1))
+                ->take(10)
+                ->get();
+        $data['total'] = $total;
+        foreach($items as $item){
+            $item->user;
         }
+        $data['items'] = $items;
+
         return response()->json([
             'success'=>true, 
-            'data'=>$receipes
+            'data'=> $data
         ]);
     }
 
     public function removeRecipe(Request $request){
-        $recipe_id = $request->recipe_id;
+        $recipe_id = $request->id;
         $recipe = Recipe::find($recipe_id)->delete();
         return response()->json([
             'success'=>true, 
@@ -314,13 +331,13 @@ class AdminController extends Controller
     }
 
     public function activeRecipe(Request $request){
-        $recipe_id = $request->recipe_id;
+        $recipe_id = $request->id;
         $recipe = Recipe::find($recipe_id);
         $recipe->active = !$recipe->active;
         $recipe->save();
         return response()->json([
             'success'=>true, 
-            'data'=>$recipe
+            'data'=>$recipe->active
         ]);
     }
 

@@ -17,6 +17,7 @@ Route::Group(['namespace'=>'Api'],function (){
     Route::post('register', 'UserController@register');
     Route::post('login', 'UserController@login' );
     Route::get('get_tyles_styles', 'UserController@getTypsAndStyles'); 
+
 });
 
 Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
@@ -35,10 +36,10 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin']
     Route::post('get_users', 'AdminController@getUsers' );
     Route::post('delete_user', 'AdminController@deleteUser');
     Route::post('active_user', 'AdminController@activeUser');
-    Route::get('get_posts', 'AdminController@getPosts');
-    Route::post('remove_post', 'AdminController@removePost');
+    Route::post('get_posts', 'AdminController@getPosts');
     Route::post('active_post', 'AdminController@activePost');
-    Route::get('get_recipes', 'AdminController@getRecipes');
+    Route::post('remove_post', 'AdminController@removePost');
+    Route::post('get_recipes', 'AdminController@getRecipes');
     Route::post('remove_recipe', 'AdminController@removeRecipe');
     Route::post('active_recipe', 'AdminController@activeRecipe');
 });
@@ -61,7 +62,6 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
     Route::post('set_block', 'UserController@setBlock');
     Route::post('get_blocks', 'UserController@getBlocks');
     Route::post('remove_block', 'UserController@removeBlock');
-
 
 
 

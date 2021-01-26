@@ -2,7 +2,7 @@
   <div>
     <b-row>
       <b-colxx xxs="12">
-        <b-card class="mb-4" title="Registered Users" v-if="!loading">
+        <b-card class="mb-4" title="Uploaded Posts" v-if="!loading">
           <b-table
             ref="custom-table"
             class="vuetable"
@@ -21,7 +21,7 @@
                 :src="row.item.photo"
                 alt="No Image"
                 style="width: 50px !important; height: 50px !important"
-                class="img-thumbnail border-0 rounded-circle list-thumbnail align-self-center xsmall"
+                class="img-thumbnail border-0 list-thumbnail align-self-center xsmall"
               />
             </template>
             <template #cell(action)="row">
@@ -99,17 +99,9 @@ export default {
             tdClass: "list-item-heading",
           },
           { key: "photo", label: "Photo", sortable: true },
-          { key: "fname", label: "FName", sortable: true },
-          { key: "lname", label: "LName", sortable: true },
-          { key: "email", label: "Email", sortable: true },
-          { key: "bio", label: "Bio", sortable: true },
-          { key: "styleOfCooking", label: "StyleOfCooking", sortable: true },
-          {
-            key: "typeOfProfessional",
-            label: "TypeOfProfessional",
-            sortable: true,
-          },
-          { key: "location", label: "Location", sortable: true },
+          { key: "user.fname", label: "FName", sortable: true },
+          { key: "user.lname", label: "LName", sortable: true },
+          { key: "content", label: "Content", sortable: true },
           { key: "active", label: "Active", sortable: true },
           { key: "action", label: "Action" },
         ],
@@ -129,7 +121,7 @@ export default {
 
   methods: {
     getData() {
-      let url = `admin/get_users`;
+      let url = `admin/get_posts`;
       let model = {
         page: this.currentPage,
       };
@@ -171,7 +163,7 @@ export default {
         id: id,
       };
 
-      let url = `admin/active_user`;
+      let url = `admin/active_post`;
       this.loading = true;
       webServices
         .post(url, JSON.stringify(model), {
@@ -183,7 +175,6 @@ export default {
         .then((response) => {
           if (response.data.success) {
             item.active = response.data.data;
-            console.log(item.active);
           }
         })
         .catch((error) => {
@@ -199,7 +190,7 @@ export default {
         id: id,
       };
 
-      let url = `admin/delete_user`;
+      let url = `admin/remove_post`;
       this.loading = true;
       webServices
         .post(url, JSON.stringify(model), {
