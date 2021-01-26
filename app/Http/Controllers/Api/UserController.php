@@ -168,7 +168,7 @@ class UserController extends Controller
     {
         $posts = Post::where('active', true)->orderBy('id', 'desc')->get();
         foreach ($posts as $post) {
-            $post->user;
+            $post->user->histories;
             $post['user']['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($post['user']['typeOfProfessional']);
         }
 
@@ -366,6 +366,7 @@ class UserController extends Controller
     {
         $users = User::where('role', 1)->where('active', true)->orderBy('id')->get();
         foreach ($users as $user) {
+            $user->histories;
             $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
             $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
@@ -507,8 +508,6 @@ class UserController extends Controller
             "type" => 'new-message',
             "chat" => $chat->id,
             "room" => $room->id,
-            "text" => $message['text'],
-            "name" => $send_user->fname,
         );
         $this->sendNotificationToUser($receive_id, $notification, $notificationData);
         
