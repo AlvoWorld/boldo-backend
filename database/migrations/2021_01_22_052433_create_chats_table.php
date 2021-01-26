@@ -16,8 +16,8 @@ class CreateChatsTable extends Migration
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
             $table->integer('room_id');
-            $table->integer('read1')->nullable();
-            $table->integer('read2')->nullable();
+            $table->boolean('read1')->nullable();
+            $table->boolean('read2')->nullable();
             $table->text('content')->nullable();
             $table->string('etc')->nullable();
             $table->timestamps();

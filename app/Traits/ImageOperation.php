@@ -14,7 +14,7 @@ trait ImageOperation
         if ($image_object){
             $file=$image_object;
             try{
-                $file_name = $prefix.microtime().'.' . explode('/', explode(':', substr($file, 0, strpos($file, ';')))[1])[1];
+                $file_name = 'image_'.time().'.png';
                 if(!is_null($directory))
                     \Image::make($image_object)->save(public_path("uploads/$directory/").$file_name);
                 else

@@ -236,11 +236,11 @@ export default {
     },
 
     saveItem() {
-      if (this.item.name == "") {
+      if (this.item.name == "" || this.item.name == "All") {
         this.addNotification(
           "error filled",
           "Error",
-          "Please input item name."
+          "Please input valid item name."
         );
         return;
       }

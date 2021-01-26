@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::Group(['namespace'=>'Api'],function (){
-    Route::post('register', 'UserController@register' );
+    Route::post('register', 'UserController@register');
     Route::post('login', 'UserController@login' );
-    Route::get('get_front_datas', 'UserController@getFrontDatas');
+    Route::get('get_tyles_styles', 'UserController@getTypsAndStyles'); 
 });
 
 Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
@@ -44,28 +44,33 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin']
 });
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
+    Route::post('update_token', 'UserController@updateToken');
+    Route::post('get_user_posts', 'UserController@getUserPosts');
     Route::post('sign_out', 'UserController@signOut' );
-    Route::post('upload_post', 'UserController@uploadPost' );
-    Route::post('get_posts', 'UserController@getPosts' );
-    Route::post('get_pros', 'UserController@getPros' );
-    Route::post('send_connect', 'UserController@sendConnect' );
-    Route::post('get_pendings', 'UserController@getPendings' );
-    Route::post('upload_recipe', 'UserController@uploadRecipe' );
-    Route::post('get_recipes', 'UserController@getRecipes' );
-    Route::post('get_user_info', 'UserController@getUserInfo' );
-    Route::post('remove_pending', 'UserController@removePending' );
-    Route::post('update_token', 'UserController@updateToken' );
-    Route::post('get_badge', 'UserController@getBadge');
-    Route::post('get_connections', 'UserController@getConnections');
-    Route::post('apply_pending', 'UserController@applyPending');
-    Route::post('view_recipe', 'UserController@viewRecipe');
-    Route::post('get_profile', 'UserController@getProfile');
     Route::post('update_profile', 'UserController@updateProfile');
+    Route::get('get_posts', 'UserController@getPosts');
+    Route::post('upload_post', 'UserController@uploadPost' );
+    Route::post('delete_post', 'UserController@deletePost' );
     Route::post('send_report', 'UserController@sendReport');
-    Route::post('make_chatroom', 'UserController@makeChatRoom');
+    Route::get('get_recipes', 'UserController@getRecipes' );
+    Route::post('upload_recipe', 'UserController@uploadRecipe' );
+    Route::post('view_recipe', 'UserController@viewRecipe');
     Route::post('get_contacts', 'UserController@getContacts');
+    Route::get('get_pros', 'UserController@getPros' );
+    Route::post('make_chatroom', 'UserController@makeChatRoom');
     Route::post('set_block', 'UserController@setBlock');
     Route::post('get_blocks', 'UserController@getBlocks');
     Route::post('remove_block', 'UserController@removeBlock');
+
+
+
+
+    Route::post('send_connect', 'UserController@sendConnect' );
+    Route::post('get_pendings', 'UserController@getPendings' );
+    Route::post('remove_pending', 'UserController@removePending' );
+    Route::post('get_badge', 'UserController@getBadge');
+    Route::post('get_connections', 'UserController@getConnections');
+    Route::post('apply_pending', 'UserController@applyPending');
+    Route::post('get_profile', 'UserController@getProfile');
     Route::post('send_message', 'UserController@sendMessage');
 });

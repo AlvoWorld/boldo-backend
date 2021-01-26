@@ -11,9 +11,14 @@ class Room extends Model
     protected $fillable = [
         'user_id',
         'connect_id',
-        'block1'       
-        'block2'       
-        'active'       
+        'block1',       
+        'block2',       
+        'active',       
         'etc'       
     ];
+
+    public function chats()
+    {
+        return $this->hasMany('App\Models\Chat');
+    }
 }

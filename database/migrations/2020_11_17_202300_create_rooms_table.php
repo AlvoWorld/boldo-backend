@@ -19,7 +19,7 @@ class CreateRoomsTable extends Migration
             $table->integer('connect_id');
             $table->integer('block1')->nullable();
             $table->integer('block2')->nullable();
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
             $table->string('etc')->nullable();
             $table->timestamps();
         });

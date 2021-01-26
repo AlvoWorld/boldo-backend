@@ -72,4 +72,10 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\History');
     }
+
+    public function report()
+    {
+        return $this->hasMany('App\Models\Report');
+    }
+
 }

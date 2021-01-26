@@ -10,9 +10,10 @@ use App\Models\History;
 use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
-use App\Models\ChatRoom;
+use App\Models\Room;
+use App\Models\Chat;
 use App\Models\Type;
-use App\Models\CookingStyle;
+use App\Models\Style;
 use App\Traits\ImageOperation;
 use DB;
 use App\Traits\CommonHelper;
@@ -26,52 +27,27 @@ class UserController extends Controller
     {
     }
 
-    public function signOut(Request $request){
-        $id = $request->input('id');
-        $user = User::find($id);
-        $user->device_token = NULL;
-        $user->save();
-        return response()->json([
-            'success'=>true, 
-        ]);
-    }
-
-    public function updateToken(Request $request){
-        $id = $request->input('id');
-        $device_token = $request->input('token');
-
-        $user = User::find($id);
-        $user->device_token = $device_token;
-        $user->save();
-
-        return response()->json([
-            'success'=>true, 
-        ]);
-    }
-
-    public function getFrontDatas(Type $var = null){
-        $types = Type::select('id', 'name')->orderBy('sort')->get();
-        $styles = CookingStyle::select('id', 'name')->orderBy('sort')->get();
+    public function getTypsAndStyles(Type $var = null){
+        $types = Type::select('id', 'name', 'style')->orderBy('sort')->get();
+        $styles = Style::select('id', 'name')->orderBy('sort')->get();
         return response()->json([
             'success'=>true, 
             "types"=>$types,
             "styles"=>$styles
-        ], 200);
+        ]);
     }
 
     public function register(Request $request){
-
-        // $photo = $request->photo64;
         $fname = $request->fname;
         $lname = $request->lname;
+        if(is_null($lname)){
+            $lname = "";
+        }
         $email = $request->email;
         $bio = $request->bio;
         $references = $request->references;
         $styleOfCooking = $request->styleOfCooking;
         $liquorServingCertification = $request->liquorServingCertification;
-        $company = $request->company;
-        $title = $request->title;
-        $years = $request->years;
         $location = $request->location;
         $postalCode = $request->postalCode;
         $geolocation = $request->geolocation;
@@ -82,9 +58,9 @@ class UserController extends Controller
 
         if (User::where('email', $email)->count() > 0) {
             return response()->json([
-            'success'=>true,
-            "data"=>"exists"
-        ], 200);
+                'success'=>true,
+                "data"=>"exists"
+            ], 200);
         }
         
         $user = new User;
@@ -134,33 +110,13 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function updateProfile(Request $request){
-        $id = $request->id;
-        $all = $request->all();
-        $user = User::find($id);
-        if($request->get('photo') != "" && !str_contains($request->get('photo'), "http")){
-            $image=$this->uploadImage($request->get('photo'),"logo", "user");
-            $all['photo'] = url("/uploads/logo/".$image);
-        }
-        $user->update($all);
-        History::where('user_id', $user->id)->delete();
-
-        foreach($all['histories'] as $history){
-            $history['user_id'] = $user->id;
-            History::create($history);
-        }
-        return response()->json([
-            'success'=>true,
-            'data'=>$all
-        ]);
-    }
-
     public function login(Request $request){
         $email = $request->email;
         $password = $request->password;
         $token = "";
         if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
+            $user->histories;
             if($user->active == false){
                 return response()->json([
                     'success'=>false, 
@@ -178,18 +134,117 @@ class UserController extends Controller
         }
         return response()->json([
             'success'=>false, 
-            'message'=>'Email or password is not correct, please retry.'
+            'message'=>'Email or password is not correct.'
         ], 401);
+    }
+
+    public function getUserPosts(Request $request){
+        $id = $request->input('id');
+        $posts = Post::where('user_id', $id)->orderBy('id', 'desc')->get();
+        return response()->json([
+            'success'=>true,
+            'data'=>$posts,
+        ]);
+    }
+
+    public function signOut(Request $request){
+        $id = $request->input('id');
+        $user = User::find($id);
+        $user->device_token = NULL;
+        $user->save();
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    public function getPosts(Request $request){
+        $posts = Post::where('active', true)->orderBy('id', 'desc')->get();
+        foreach($posts as $post){
+            $post->user;
+            $post['user']['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($post['user']['typeOfProfessional']);
+        }
+
+        return response()->json([
+            'success'=>true,
+            'data'=>$posts,
+        ]);
     }
 
     public function uploadPost(Request $request){
         $id = $request->input('id');
-        $image=$this->uploadImage($request->get('photo64'),"post", "post");
+        $image=$this->uploadImage($request->get('photo'),"post", "post");
         $image = url("/uploads/post/".$image);
+
+
         $post = Post::create(['user_id' => $id , 'photo' => $image, 'content' =>$request->input('content')]);
+        
+        $notification = array(
+            'title' => "New Post Received", 
+            'body' => "You received new post"
+        );
+
+        $notificationData = array(
+            "type" => 'new-post',
+        );
+
+        $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
             'success'=>true,
-            'data'=>$post 
+        ]);
+    }
+
+    public function deletePost(Request $request){
+        $id = $request->input('id');
+        Post::find($id)->delete();
+        Report::where('post_id', $id)->delete();
+        return response()->json([
+            'success'=>true,
+            'data'=>'' 
+        ]);
+    }
+
+    public function sendReport(Request $request){
+        $id = $request->id;
+        $user_id = $request->user_id;
+        $content = $request->reason;
+        Report::create(['user_id' => $user_id , 
+        'post_id' => $id, 'content' =>$content]);
+
+        return response()->json([
+            'success'=>true,
+            'data'=>''
+        ]);
+    }
+
+    public function updateToken(Request $request){
+        $id = $request->input('id');
+        $device_token = $request->input('token');
+        $user = User::find($id);
+        $user->device_token = $device_token;
+        $user->save();
+        return response()->json([
+            'success'=>true, 
+        ]);
+    }
+
+    public function updateProfile(Request $request){
+        $id = $request->id;
+        $all = $request->all();
+        $user = User::find($id);
+        if($request->get('photo') != "" && !str_contains($request->get('photo'), "http")){
+            $image=$this->uploadImage($request->get('photo'),"logo", "user");
+            $all['photo'] = url("/uploads/logo/".$image);
+        }
+        $all['password'] = bcrypt($all['password']);
+        $user->update($all);
+        History::where('user_id', $user->id)->delete();
+        foreach($all['histories'] as $history){
+            $history['user_id'] = $user->id;
+            History::create($history);
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$all
         ]);
     }
 
@@ -205,49 +260,21 @@ class UserController extends Controller
     public function getStyleNamesFromIds($ids){
         $data = array();
         foreach($ids as $id){
-            $type = CookingStyle::find($id);
+            $type = Style::find($id);
             array_push($data, $type->name);
         }
-        return $data;
+        return $ids;
     }
 
-    public function getPosts(Request $request){
-        $id = $request->input('id');
-        $posts = Post::where('active', true)->orderBy('id', 'desc')->get();
-        foreach($posts as $post){
-            $post->user;
-            $post['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($post['user']['typeOfProfessional']);
+    public function getRecipes(Request $request){
+        $recipes = Recipe::where('active', true)->orderBy('id', 'desc')->orderBy('count', 'desc')->get();
+        foreach($recipes as $recipe){
+            $recipe->reviews;
+            $recipe->user;
         }
         return response()->json([
             'success'=>true,
-            'data'=>$posts,
-        ]);
-    }
-
-    public function getPros(Request $request){
-        $user = User::find($request->input('id'));
-        $users = User::where('role', 1)->where('active', true)->orderBy('id')->get();
-        foreach($users as $user){
-            $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
-            $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
-        }
-        return response()->json([
-            'success'=>true,
-            'data'=>$users,
-        ]);
-    }
-
-    public function getPendings(Request $request){
-        $id = $request->input('id');
-        $pendings = Pending::where([['user_id',  $id], ['state', 0]])
-        ->get();
-        foreach($pendings as $pending){
-            $pending->userPending;
-            $pending['userPending']['typeOfProfessional'] = $this->getTypeNamesFromIds($pending['userPending']['typeOfProfessional']);
-        }
-        return response()->json([
-            'success'=>true,
-            'pendings'=>$pendings
+            'data'=>$recipes
         ]);
     }
 
@@ -256,28 +283,20 @@ class UserController extends Controller
         $title = $request->input('title');
         $content = $request->input('content');
 
-        $recipe = new Recipe;
-        $recipe->user_id = $id;
-        $recipe->title = $title;
-        $recipe->content = $content;
-        $image=$this->uploadImage($request->get('photo64'),"recipe", "recipe");
+        $image=$this->uploadImage($request->get('photo'),"recipe", "recipe");
         $image = url("/uploads/recipe/".$image);
-        $recipe->photo = $image;
-        $recipe->save();
+        $recipe = Recipe::create(['user_id' => $id , 'photo' => $image,'title' =>$title, 'content' =>$content]);
 
+        $notification = array(
+            'title' => "New Recipe Received", 
+            'body' => "You received new recipe"
+        );
+        $notificationData = array(
+            "type" => 'new-recipe',
+        );
+        $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
             'success'=>true,
-        ]);
-    }
-
-    public function getRecipes(Request $request){
-        $recipes = Recipe::where('active', true)->orderBy('count', 'desc')->orderBy('id', 'desc')->get();
-        foreach($recipes as $recipe){
-            $recipe->reviews;
-        }
-        return response()->json([
-            'success'=>true,
-            'data'=>$recipes
         ]);
     }
 
@@ -294,35 +313,140 @@ class UserController extends Controller
         $review = Review::updateOrCreate(['recipe_id' => $form['recipe_id'], 'user_id' => $form['user_id']], $form);
         return response()->json([
             'success'=>true,
-            'data'=>$review
         ]);
     }
-    
-    public function getUserInfo(Request $request){
 
-        $id = $request->input('id');
-        $posts = Post::where('user_id', $id)->orderBy('id')->get();
-        $connections = Pending::where('state', 1)
-                                ->orderBy('id')->get();
-        $data = array();
-        foreach($connections as $connection){
-           if($connection->user_id == $id){
-               $user = User::find($connection->connect_id);
-           }else{
-            $user = User::find($connection->user_id);
-           }
-           if($connection->user_id == $id || $connection->connect_id == $id){
-               $connection->user = $user;
-               $connection['user']['typeOfProfessional'] = $this->getTypeNamesFromIds($connection['user']['typeOfProfessional']);
-               array_push($data, $connection);
-           }
+    public function getContacts(Request $request){
+        $id = $request->id;
+        $rooms = Room::where('active', true)
+                ->where(function($query) use ($id) {
+                    $query->where('user_id', $id)
+                        ->orWhere('connect_id', $id);
+                })
+                ->orderBy('id', 'desc')->get();
 
+        foreach ($rooms as $room) {
+            if($room->user_id == $id){
+                $user = User::find($room->user_id);
+                $badge = Chat::where('room_id', $room->id)->where('read1', false)->get()->count();
+
+            }else{
+                $user = User::find($room->connect_id);
+                $badge = Chat::where('room_id', $room->id)->where('read2', false)->get()->count();
+            }
+            $room->user = $user;
+            $room->badge = $badge;
         }
-
         return response()->json([
             'success'=>true,
-            'posts'=>$posts,
-            'users'=>$data,
+            'data'=>$rooms
+        ]);
+    }
+
+    public function getPros(Request $request){
+        $users = User::where('role', 1)->where('active', true)->orderBy('id')->get();
+        foreach($users as $user){
+            $user['typeOfProfessionalNames'] = $this->getTypeNamesFromIds($user->typeOfProfessional);
+            $user['styleOfCookingNames'] = $this->getStyleNamesFromIds($user->styleOfCooking);
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$users,
+        ]);
+    }
+
+    public function makeChatRoom(Request $request){
+        $user_id = $request->user_id;
+        $connect_id = $request->connect_id;
+        $all = $request->all();
+        $room = Room::updateOrCreate(['user_id' => $user_id, 'connect_id' => $connect_id], $all);
+        return response()->json([
+            'success'=>true,
+            'data'=>$room
+        ]);
+    }
+
+    public function setBlock(Request $request){
+        $room_id = $request->room_id;
+        $user_id = $request->user_id;
+        $room = Room::find($room_id);
+        if($room->user_id == $user_id){
+            $room->block1 = false;
+        }else{
+            $room->block2 = false;
+        }
+        $room->active = false;
+        $room->save();
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+    public function getBlocks(Request $request){
+        $user_id = $request->user_id;
+        $rooms = Room::where('active', false)
+                ->where(function($query) use ($user_id) {
+                    $query->where('user_id', $user_id)
+                        ->orWhere('connect_id', $user_id);
+                })
+                ->orderBy('id', 'desc')->get();
+
+        foreach ($rooms as $room) {
+            if($room->user_id == $id){
+                $user = User::find($room->user_id);
+                $badge = Chat::where('room_id', $room->id)->where('read1', false)->get()->count();
+
+            }else{
+                $user = User::find($room->connect_id);
+                $badge = Chat::where('room_id', $room->id)->where('read2', false)->get()->count();
+            }
+            $room->user = $user;
+            $room->badge = $badge;
+        }
+        return response()->json([
+            'success'=>true,
+            'data'=>$rooms
+        ]);
+    }
+
+    public function removeBlock(Request $request){
+        $user_id = $request->user_id;
+        $room_id = $request->room_id;
+        $room = Room::find($id);
+        if($room->user_id == $user_id){
+            $room->block1 = true;
+        }else{
+            $room->block2 = true;
+        }
+        $room->save();
+        return response()->json([
+            'success'=>true,
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function getPendings(Request $request){
+        $id = $request->input('id');
+        $pendings = Pending::where([['user_id',  $id], ['state', 0]])
+        ->get();
+        foreach($pendings as $pending){
+            $pending->userPending;
+            $pending['userPending']['typeOfProfessional'] = $this->getTypeNamesFromIds($pending['userPending']['typeOfProfessional']);
+        }
+        return response()->json([
+            'success'=>true,
+            'pendings'=>$pendings
         ]);
     }
 
@@ -476,143 +600,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function sendReport(Request $request){
-        $id = $request->id;
-        return response()->json([
-            'success'=>true,
-            'data'=>''
-        ]);
-    }
 
-    public function getContacts(Request $request){
-        $id = $request->id;
-        $user = User::find($id);
-        $role = $user->role;
-        $query = Pending::where('state', 1);
-        if($role == 1){
-            $query->where("connect_id", $id);
-        }else{
-            $query->where("user_id", $id);
-        }
-        $contacts = $query->get();
-
-        $data = array();
-        foreach ($contacts as $contact) {
-            $chatroom = $contact->chatroom;
-            if($role == 1){
-                if($chatroom->state2 == 1){
-                    $user = User::find($contact->user_id);
-                    $contact['user'] = $user;
-                    array_push($data, $contact);
-                }
-            }else{
-                if($chatroom->state1 == 1){
-                    $user = User::find($contact->connect_id);
-                    $contact['user'] = $user;
-                    array_push($data, $contact);
-                }
-            }
-        }
-        
-        return response()->json([
-            'success'=>true,
-            'data'=>$data
-        ]);
-    }
-
-    public function setBlock(Request $request){
-        $role = $request->role;
-        $id = $request->id;
-
-        $chatroom = ChatRoom::find($id);
-        if($role == 1){
-            $chatroom->state2 = 0;
-        }else{
-            $chatroom->state1 = 0;
-        }
-        $chatroom->save();
-        return response()->json([
-            'success'=>true,
-            'data'=>''
-        ]);
-    }
-
-    public function removeBlock(Request $request){
-    
-        $role = $request->role;
-        $id = $request->id;
-        $chatroom = ChatRoom::find($id);
-        if($role == 1){
-            $chatroom->state2 = 1;
-        }else{
-            $chatroom->state1 = 1;
-        }
-        $chatroom->save();
-        return response()->json([
-            'success'=>true,
-            'data'=>''
-        ]);
-    }
-
-    public function getBlocks(Request $request){
-        $id = $request->id;
-        $user = User::find($id);
-
-        if($user->role == 1){
-            $pendings = Pending::where('connect_id', $id)->where('state', 1)->get();
-        }else{
-            $pendings = Pending::where('user_id', $id)->where('state', 1)->get();
-        }
-
-        $data = array();
-        foreach ($pendings as $pending) {
-            if($user->role == 1){
-                $chatroom = ChatRoom::where('state2', 0)->where('pending_id', $pending->id)->first();
-                if(!is_null($chatroom)){
-                    $oposit_user = User::find($pending->user_id);
-                    $chatroom['user']=$oposit_user;
-                    array_push($data, $chatroom);
-                }
-              
-            }else{
-                $chatroom = ChatRoom::where('state1', 0)->where('pending_id', $pending->id)->first();
-                if(!is_null($chatroom)){
-                    $oposit_user = User::find($pending->connect_id);
-                    $chatroom['user']=$oposit_user;
-                    array_push($data, $chatroom);
-                }
-            }
-        }
-        return response()->json([
-            'success'=>true,
-            'data'=>$data
-        ]);
-    }
-
-    public function makeChatRoom(Request $request){
-        $id = $request->id;
-        $oposit_id = $request->oposit_id;
-        $user = User::find($oposit_id);
-
-        $pending = Pending::where(['user_id'=> $id, 'connect_id'=>$oposit_id])->first();
-        if(is_null($pending)){
-            $pending = Pending::create(['user_id'=> $id, 'connect_id'=>$oposit_id, 'state'=>1]);
-            $room = 'room'.time();
-            $all = array('pending_id'=>$pending->id,  'room'=>$room, 'state1'=>1, 'state2'=>1);
-            ChatRoom::create($all);
-        }else{
-            $pending->state = 1;
-            $pending->save();
-        }
-
-        $chatroom = $pending->chatroom;
-        $pending['user'] = $user;
-      
-        return response()->json([
-            'success'=>true,
-            'data'=>$pending
-        ]);
-    }
 
     public function sendMessage(Request $request){
         $user_id = $request->input('user_id');
@@ -667,5 +655,25 @@ class UserController extends Controller
         ]);
     }
 
-
+    public function sendNotificationToUsers($notification, $notificationData)
+    {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $users = User::whereIn('role', [0, 1])->where('active', true)->get();
+        foreach($users as $user){
+            $device_token = $user->device_token;
+            if(!is_null($device_token)){
+                $fields = array(
+                    'to' => $device_token,
+                    'notification' => $notification,
+                    'data' => $notificationData
+                );
+    
+                $headers = array(
+                    'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
+                    'Content-type: Application/json'
+                );
+                $this->sendCurlRequest($url,'post',json_encode($fields),$headers);
+            }
+        }
+    }
 }

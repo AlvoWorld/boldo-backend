@@ -11,6 +11,7 @@ use App\Models\Recipe;
 use App\Models\Review;
 use App\Models\Report;
 use App\Models\Type;
+use App\Models\Room;
 use App\Models\Style;
 use App\Traits\ImageOperation;
 use DB;
@@ -118,7 +119,7 @@ class AdminController extends Controller
         );
 
         $notificationData = array(
-            "type" => 'new-type',
+            "type" => 'changed-type',
         );
 
         $this->sendNotificationToUsers($notification, $notificationData);
@@ -136,7 +137,7 @@ class AdminController extends Controller
         );
 
         $notificationData = array(
-            "type" => 'new-type',
+            "type" => 'changed-type',
         );
         Type::find($type_id)->delete();
         $users = User::whereIn('role', [0, 1])->get();
@@ -177,7 +178,7 @@ class AdminController extends Controller
         );
 
         $notificationData = array(
-            "type" => 'new-style',
+            "type" => 'changed-type',
         );
 
         // $this->sendNotificationToUsers($notification, $notificationData);
@@ -203,7 +204,7 @@ class AdminController extends Controller
         );
 
         $notificationData = array(
-            "type" => 'new-type',
+            "type" => 'changed-type',
         );
         // $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
@@ -239,8 +240,14 @@ class AdminController extends Controller
         $user->histories()->delete();
         $user->receipe()->delete();
         $user->post()->delete();
+        $user->report()->delete();
         $user->delete();
 
+        $rooms = Room::where('user_id', $user_id)->orWhere('connect_id', $user_id)->get();
+        foreach($rooms as $room){
+            $room->chats()->delete();
+            $room->delete();
+        }
         return response()->json([
             'success'=>true, 
         ]);
