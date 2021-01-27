@@ -283,7 +283,7 @@ class UserController extends Controller
 
     public function getRecipes(Request $request)
     {
-        $recipes = Recipe::where('active', true)->orderBy('id', 'desc')->orderBy('count', 'desc')->get();
+        $recipes = Recipe::where('active', true)->orderBy('count', 'desc')->orderBy('id', 'desc')->get();
         foreach ($recipes as $recipe) {
             $recipe->reviews;
             $recipe->user;
