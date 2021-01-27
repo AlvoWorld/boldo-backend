@@ -4,7 +4,7 @@
       <b-colxx xl="4" class="mb-4">
         <gradient-with-radial-progress-card
           icon="iconsminds-male"
-          :title="`${infos.actived_users} Actived Users`"
+          :title="`${infos.actived_users} Active Users`"
           :detail="`Your app used by these users`"
           :percent="
             infos.users == 0 ? 0 : (infos.actived_users * 100) / infos.users
@@ -19,7 +19,7 @@
       <b-colxx xl="4" class="mb-4">
         <gradient-with-radial-progress-card
           icon="iconsminds-bow-3"
-          :title="`${infos.actived_customers} Actived Customers`"
+          :title="`${infos.actived_customers} Active Customers`"
           :detail="`Your app had these customers`"
           :percent="
             infos.customers == 0 ? 0 : (infos.actived_customers * 100) / infos.customers
@@ -34,7 +34,7 @@
        <b-colxx xl="4" class="mb-4">
         <gradient-with-radial-progress-card
           icon="iconsminds-chef-hat"
-          :title="`${infos.actived_pros} Actived Professionals`"
+          :title="`${infos.actived_pros} Active Professionals`"
           :detail="`Your app had these professionals`"
           :percent="
             infos.pros == 0 ? 0 : (infos.actived_pros * 100) / infos.pros
@@ -51,7 +51,7 @@
       <b-colxx xl="4" class="mb-4">
         <gradient-with-radial-progress-card
           icon="simple-icon-badge"
-          :title="`${infos.actived_posts} Actived Posts`"
+          :title="`${infos.actived_posts} Active Posts`"
           :detail="`Your app had these posts`"
           :percent="
             infos.posts == 0 ? 0 : (infos.actived_posts * 100) / infos.posts
@@ -66,8 +66,8 @@
        <b-colxx xl="4" class="mb-4">
         <gradient-with-radial-progress-card
           icon="iconsminds-chopsticks"
-          :title="`${infos.actived_recipes} Actived Professionals`"
-          :detail="`Your app had these professionals`"
+          :title="`${infos.actived_recipes} Active Recipes`"
+          :detail="`Your app had these recipes`"
           :percent="
             infos.recipes == 0 ? 0 : (infos.actived_recipes * 100) / infos.recipes
           "
