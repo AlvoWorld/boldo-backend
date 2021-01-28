@@ -488,6 +488,13 @@ class UserController extends Controller
         $receive_id = $request->input('receive_id');
         $room_id = $request->input('room_id');
         $message = $request->input('message');
+
+        if($message['image64']){
+            $photo = $message['image'];
+            $image= $this->uploadImage($photo, "chat", "chat");
+            $image = url("/uploads/chat/".$image);
+            $message['image'] = $image;
+        }
         
         $room = Room::find($room_id);
         if ($room->active == false) {
@@ -506,7 +513,6 @@ class UserController extends Controller
             $read1 = false;
         }
         $chat = Chat::create(['room_id'=>$room_id, 'read1'=>$read1, 'read2'=>$read2, 'content'=>$message]);
-        
 
         $notification = array(
             'title' => $send_user->fname,
