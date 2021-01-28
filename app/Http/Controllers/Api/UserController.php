@@ -384,6 +384,15 @@ class UserController extends Controller
         $room = Room::updateOrCreate(['user_id' => $user_id, 'connect_id' => $connect_id], $all);
         $room->user = User::find($connect_id);
         Chat::where('room_id', $room->id)->update(['read1'=> true]);
+
+        if ($room->user_id == $user_id) {
+            $user = User::find($room->connect_id);
+        } else {
+            $user = User::find($room->user_id);
+        }
+        $room->user = $user;
+        $room->badge = 0;
+
         return response()->json([
             'success'=>true,
             'data'=>$room
