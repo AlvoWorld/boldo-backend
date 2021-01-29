@@ -187,16 +187,16 @@ class UserController extends Controller
 
         $post = Post::create(['user_id' => $id , 'photo' => $image, 'content' =>$request->input('content')]);
         
-        $notification = array(
-            'title' => "New Post Received",
-            'body' => "You received new post"
-        );
+        // $notification = array(
+        //     'title' => "New Post Received",
+        //     'body' => "You received new post"
+        // );
 
-        $notificationData = array(
-            "type" => 'new-post',
-        );
+        // $notificationData = array(
+        //     "type" => 'new-post',
+        // );
 
-        $this->sendNotificationToUsers($notification, $notificationData);
+        // $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
             'success'=>true,
         ]);
@@ -304,14 +304,14 @@ class UserController extends Controller
         $image = url("/uploads/recipe/".$image);
         $recipe = Recipe::create(['user_id' => $id , 'photo' => $image,'title' =>$title, 'content' =>$content]);
 
-        $notification = array(
-            'title' => "New Recipe Received",
-            'body' => "You received new recipe"
-        );
-        $notificationData = array(
-            "type" => 'new-recipe',
-        );
-        $this->sendNotificationToUsers($notification, $notificationData);
+        // $notification = array(
+        //     'title' => "New Recipe Received",
+        //     'body' => "You received new recipe"
+        // );
+        // $notificationData = array(
+        //     "type" => 'new-recipe',
+        // );
+        // $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
             'success'=>true,
         ]);
