@@ -405,5 +405,8 @@ class AdminController extends Controller
         );
 
         $this->sendNotificationToUsers($notification, $notificationData);
+        return response()->json([
+            'success'=>true, 
+        ]);
     }
 }
