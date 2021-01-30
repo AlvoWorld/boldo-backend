@@ -99,7 +99,8 @@ export default {
            if (!this.$v.form.$anyError) {
                 this.login({
                     email: this.form.email,
-                    password: this.form.password
+                    password: this.form.password,
+                    type: 'login'
                 });
             }
         }

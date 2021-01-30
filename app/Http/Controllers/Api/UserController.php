@@ -128,8 +128,10 @@ class UserController extends Controller
                     'message'=>'You are not available for this app, please contact with admin.'
                 ], 401);
             }
-
-            $success['token'] =  $user->createToken($user->id)->accessToken;
+            if(!is_null($request->type) && $request->type == 'login'){
+                DB::table('oauth_access_tokens')->where('user_id', $user->id)->delete();
+                $success['token'] =  $user->createToken($user->id)->accessToken;
+            }
             $success['user'] =  $user;
             return response()->json([
                 'success'=>true,

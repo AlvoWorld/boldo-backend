@@ -53,7 +53,10 @@ class AdminController extends Controller
         $token = "";
         if (Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
-            $success['token'] =  $user->createToken($user->id)->accessToken;
+            if(!is_null($request->type) && $request->type == 'login'){
+                DB::table('oauth_access_tokens')->where('user_id', $user->id)->delete();
+                $success['token'] =  $user->createToken($user->id)->accessToken;
+            }
             $success['user'] =  $user;
             
             return response()->json([
