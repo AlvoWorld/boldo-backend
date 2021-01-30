@@ -392,4 +392,18 @@ class AdminController extends Controller
         return $data;
     }
 
+
+    public function sendNews($request)
+    {
+        $notification = array(
+            'title' => $request->type,
+            'body' => $request->message,
+        );
+
+        $notificationData = array(
+            "type" => 'al',
+        );
+
+        $this->sendNotificationToUsers($notification, $notificationData);
+    }
 }

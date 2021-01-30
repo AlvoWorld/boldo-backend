@@ -17,7 +17,7 @@ Route::Group(['namespace'=>'Api'],function (){
     Route::post('register', 'UserController@register');
     Route::post('login', 'UserController@login' );
     Route::get('get_tyles_styles', 'UserController@getTypsAndStyles'); 
-    Route::post('remove_photo', 'UserController@removePhoto');
+    Route::post('send_news', 'AdminController@sendNews');
 
 });
 
