@@ -393,7 +393,7 @@ class AdminController extends Controller
     }
 
 
-    public function sendNews($request)
+    public function sendNews(Request $request)
     {
         $notification = array(
             'title' => $request->type,
