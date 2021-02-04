@@ -25,8 +25,8 @@ Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
     Route::post('login', 'AdminController@login');
 });
 
-// Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin'], function () {
-Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
+Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin'], function () {
+
     Route::get('get_data', 'AdminController@getData');
     Route::post('get_types', 'AdminController@getTypes');
     Route::post('save_type', 'AdminController@saveType');
@@ -45,8 +45,8 @@ Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
     Route::post('active_recipe', 'AdminController@activeRecipe');
 });
 
-//Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
-Route::Group(['namespace'=>'Api'], function () {
+Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
+
     Route::post('update_token', 'UserController@updateToken');
     Route::post('get_user_posts', 'UserController@getUserPosts');
     Route::post('sign_out', 'UserController@signOut');
