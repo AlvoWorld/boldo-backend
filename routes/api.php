@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::Group(['namespace'=>'Api'],function (){
     Route::post('register', 'UserController@register');
     Route::post('login', 'UserController@login');
-    Route::get('get_tyles_styles', 'UserController@getTypsAndStyles'); 
+    Route::get('get_tyles_styles', 'UserController@getTypsAndStyles');
     Route::post('send_news', 'AdminController@sendNews');
 });
 
@@ -26,7 +26,6 @@ Route::Group(['namespace'=>'Api', 'prefix'=>'admin'], function () {
 });
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin'], function () {
-
     Route::get('get_data', 'AdminController@getData');
     Route::post('get_types', 'AdminController@getTypes');
     Route::post('save_type', 'AdminController@saveType');
@@ -46,7 +45,6 @@ Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api', 'prefix'=>'admin']
 });
 
 Route::Group(['namespace'=>'Api', 'middleware' => 'auth:api'], function () {
-
     Route::post('update_token', 'UserController@updateToken');
     Route::post('get_user_posts', 'UserController@getUserPosts');
     Route::post('sign_out', 'UserController@signOut');

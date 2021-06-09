@@ -3,7 +3,7 @@
     <b-colxx xxs="12" md="10" class="mx-auto my-auto">
         <b-card class="auth-card" no-body>
             <div class="position-relative image-side">
-             
+
             </div>
             <div class="form-side">
                 <router-link tag="a" to="/">

@@ -1,5 +1,5 @@
 <?php
-   
+
 namespace App\Http\Controllers\Api;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -26,6 +26,14 @@ class AdminController extends Controller
     {
     }
 
+    function isBase64(str) {
+        try {
+            return btoa(atob(str)) == str;
+        } catch (err) {
+            return false;
+        }
+    }
+
     public function register(Request $request){
         $name = $request->name;
         $email = $request->email;
@@ -33,9 +41,9 @@ class AdminController extends Controller
 
         if(User::where('email', $email)->count() > 0)
             return response()->json([
-                'success'=>false, 
+                'success'=>false,
             ], 200);
-        
+
         $user = new User;
         $user->name = $name;
         $user->email = $email;
@@ -43,7 +51,7 @@ class AdminController extends Controller
         $user->password = bcrypt($password);
         $user->save();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ], 200);
     }
 
@@ -58,15 +66,15 @@ class AdminController extends Controller
                 $success['token'] =  $user->createToken($user->id)->accessToken;
             }
             $success['user'] =  $user;
-            
+
             return response()->json([
-                'success'=>true, 
-                "data" => $success, 
+                'success'=>true,
+                "data" => $success,
                 'message'=>"login success"
             ]);
         }
         return response()->json([
-            'success'=>false, 
+            'success'=>false,
             'message'=>'Unauthorised'
         ]);
     }
@@ -88,12 +96,12 @@ class AdminController extends Controller
         $reports = Report::get()->count();
         $new_reports = Report::get()->where('done', false)->count();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=>array('types' => $types, 'styles' => $styles, 'users' => $users, 'actived_users'=>$actived_users,
-               'customers' => $customers, 'actived_customers' => $actived_customers, 'pros' => $pros, 'actived_pros' => $actived_pros, 
+               'customers' => $customers, 'actived_customers' => $actived_customers, 'pros' => $pros, 'actived_pros' => $actived_pros,
                 'posts' => $posts, 'actived_posts'=>$actived_posts,'recipes' => $recipes, 'actived_recipes'=> $actived_recipes,
                 'reports' => $reports, 'new_reports' => $new_reports,)
-               
+
         ]);
     }
 
@@ -107,7 +115,7 @@ class AdminController extends Controller
         $data['total'] = $total;
         $data['items'] = $types;
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=> $data
         ]);
     }
@@ -117,7 +125,7 @@ class AdminController extends Controller
         $type = Type::updateOrCreate(['id' => $all['id']], $all);
 
         $notification = array(
-            'title' => "New Professional Types Added", 
+            'title' => "New Professional Types Added",
             'body' => "You received new type from admin"
         );
 
@@ -127,7 +135,7 @@ class AdminController extends Controller
 
         $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -135,7 +143,7 @@ class AdminController extends Controller
         $type_id = $request->input('id');
 
         $notification = array(
-            'title' => "Professional Types Removed", 
+            'title' => "Professional Types Removed",
             'body' => "Your received type removed signal from admin"
         );
 
@@ -152,7 +160,7 @@ class AdminController extends Controller
         }
         $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -166,7 +174,7 @@ class AdminController extends Controller
         $data['total'] = $total;
         $data['items'] = $styles;
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=> $data
         ]);
     }
@@ -176,7 +184,7 @@ class AdminController extends Controller
         $style = Style::updateOrCreate(['id' => $all['id']], $all);
 
         $notification = array(
-            'title' => "New Professional Styles Added", 
+            'title' => "New Professional Styles Added",
             'body' => "You received new style from admin"
         );
 
@@ -186,7 +194,7 @@ class AdminController extends Controller
 
         // $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -202,7 +210,7 @@ class AdminController extends Controller
         }
 
         $notification = array(
-            'title' => "Professional Style Removed", 
+            'title' => "Professional Style Removed",
             'body' => "Your received style removed signal from admin"
         );
 
@@ -211,7 +219,7 @@ class AdminController extends Controller
         );
         // $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -227,11 +235,11 @@ class AdminController extends Controller
             $user->typeOfProfessional = $this->getTypeNamesFromIds($user->typeOfProfessional);
             $user->styleOfCooking = $this->getStyleNamesFromIds($user->styleOfCooking);
         }
-        
+
         $data['total'] = $total;
         $data['items'] = $users;
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=> $data
         ]);
     }
@@ -252,7 +260,7 @@ class AdminController extends Controller
             $room->delete();
         }
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -262,7 +270,7 @@ class AdminController extends Controller
         $user->active = !$user->active;
         $user->save();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=>$user->active
         ]);
     }
@@ -281,7 +289,7 @@ class AdminController extends Controller
         $data['items'] = $posts;
 
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=> $data
         ]);
     }
@@ -291,7 +299,7 @@ class AdminController extends Controller
         $post = Post::find($post_id)->delete();
         Report::where('post_id', $post_id)->delete();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -301,7 +309,7 @@ class AdminController extends Controller
         $post->active = !$post->active;
         $post->save();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=>$post->active
         ]);
     }
@@ -320,7 +328,7 @@ class AdminController extends Controller
         $data['items'] = $items;
 
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=> $data
         ]);
     }
@@ -329,7 +337,7 @@ class AdminController extends Controller
         $recipe_id = $request->id;
         $recipe = Recipe::find($recipe_id)->delete();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 
@@ -339,7 +347,7 @@ class AdminController extends Controller
         $recipe->active = !$recipe->active;
         $recipe->save();
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
             'data'=>$recipe->active
         ]);
     }
@@ -356,7 +364,7 @@ class AdminController extends Controller
                     'notification' => $notification,
                     'data' => $notificationData
                 );
-    
+
                 $headers = array(
                     'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
                     'Content-type: Application/json'
@@ -409,7 +417,7 @@ class AdminController extends Controller
 
         $this->sendNotificationToUsers($notification, $notificationData);
         return response()->json([
-            'success'=>true, 
+            'success'=>true,
         ]);
     }
 }

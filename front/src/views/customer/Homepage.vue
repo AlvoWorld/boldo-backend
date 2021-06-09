@@ -105,7 +105,7 @@
                 </div>
                 <p></p>
                 <p class="learn-more"><a href="" class="btn btn-lg btn-dark">Learn More</a></p>
-                
+
             </div>
             </div>
             <p>&nbsp;</p>
@@ -214,7 +214,7 @@
                 Everyday 11am - 11pm
                 </div>
             </div>
-            
+
             <div class="media">
                 <i class="fa fa-map-marker mr-3"></i>
                 <div class="media-body">
@@ -222,7 +222,7 @@
                 50 Paddington St, Marylebone, <br />London W1U 4HP
                 </div>
             </div>
-            
+
             <div class="media">
                 <i class="fa fa-phone mr-3"></i>
                 <div class="media-body">
@@ -230,7 +230,7 @@
                 123-456-7890
                 </div>
             </div>
-            
+
             <div class="media">
                 <i class="fa fa-envelope mr-3"></i>
                 <div class="media-body">
@@ -292,7 +292,7 @@
                         <form action="" method="get">
                             <div class="form-group">
                                 <input type="text" class="form-control form-control-lg" placeholder="Your Name" id="name" aria-describedby="emailHelp">
-                            </div>         
+                            </div>
                             <div class="form-group">
                                 <input type="email" class="form-control form-control-lg" placeholder="Email Address" id="exampleInputEmail1" aria-describedby="emailHelp">
                                 <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
@@ -301,10 +301,10 @@
                         </form>
                     </div>
                 </div>
-            </div>      
+            </div>
         </footer>
 
-        <div class="copy">      
+        <div class="copy">
             <div class="container">Copyright © 2020 Marco’s Franchising LLC. All Rights Reserved.</div>
         </div>
     </div>
@@ -329,7 +329,7 @@ export default {
     components: {
 
     },
-   
+
     computed: {
 
     },
@@ -356,7 +356,7 @@ export default {
 </script>
 
 <style lang="css" scoped>
-    @import "../../assets/css/home/css/bootstrap.css";
-    @import "../../assets/css/home/css/jquery.fancybox.min.css";
-    @import "../../assets/css/home/css/style.css";
+  @import "../../assets/css/home/css/bootstrap.css";
+  @import "../../assets/css/home/css/jquery.fancybox.min.css";
+  @import "../../assets/css/home/css/style.css";
 </style>

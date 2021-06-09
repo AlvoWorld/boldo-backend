@@ -61,17 +61,17 @@ export default {
       webServices.post('admin/login', JSON.stringify(payload), { headers: { 'Content-Type': 'application/json' } })
       .then(response => {
         if (response.data.success) {
-          const item = { 
+          const item = {
             name: response.data.data.user.name,
-            email: response.data.data.user.email, 
-            role: response.data.data.user.role, 
+            email: response.data.data.user.email,
+            role: response.data.data.user.role,
             token:response.data.data.token,
             ...currentUser }
           localStorage.setItem('user', JSON.stringify(item))
-          commit('setUser', { 
-            name: item.name, 
-            email: item.email, 
-            role:item.role,  
+          commit('setUser', {
+            name: item.name,
+            email: item.email,
+            role:item.role,
             token:item.token,
             ...currentUser })
         } else {
@@ -90,7 +90,6 @@ export default {
         }, 3000)
       })
     },
-
     forgotPassword({ commit }, payload) {
       commit('clearError')
       commit('setProcessing', true)

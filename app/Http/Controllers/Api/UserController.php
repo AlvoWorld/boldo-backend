@@ -1,5 +1,5 @@
 <?php
-   
+
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +16,7 @@ use App\Models\Chat;
 use App\Models\Type;
 use App\Models\Style;
 use App\Traits\ImageOperation;
-use File; 
+use File;
 use DB;
 use App\Traits\CommonHelper;
 
@@ -66,14 +66,14 @@ class UserController extends Controller
                 "data"=>"exists"
             ], 200);
         }
-        
+
         $user = new User;
         $user->fname = $fname;
         $user->lname = $lname;
         $user->email = $email;
         $user->bio = $bio;
         $user->references = $references;
-        
+
         $user->liquorServingCertification = $liquorServingCertification;
         $user->company = '';
         $user->title = '';
@@ -98,7 +98,7 @@ class UserController extends Controller
         } else {
             $user->photo = url("/uploads/logo/default.png");
         }
-       
+
         $user->save();
         if ($user->role == 1) {
             for ($i = 0; $i < count($histories); $i ++) {
@@ -107,7 +107,7 @@ class UserController extends Controller
                 History::create($history);
             }
         }
-      
+
         return response()->json([
             'success'=>true,
             "data"=>''
@@ -188,7 +188,7 @@ class UserController extends Controller
 
 
         $post = Post::create(['user_id' => $id , 'photo' => $image, 'content' =>$request->input('content')]);
-        
+
         // $notification = array(
         //     'title' => "New Post Received",
         //     'body' => "You received new post"
@@ -497,7 +497,7 @@ class UserController extends Controller
             $image = url("/uploads/chat/".$image);
             $message['image'] = $image;
         }
-        
+
         $room = Room::find($room_id);
         if ($room->active == false) {
             return response()->json([
@@ -527,7 +527,7 @@ class UserController extends Controller
             "room" => $room->id,
         );
         $this->sendNotificationToUser($receive_id, $notification, $notificationData);
-        
+
         return response()->json([
             'success'=>true,
         ]);
@@ -629,7 +629,7 @@ class UserController extends Controller
                     'notification' => $notification,
                     'data' => $notificationData
                 );
-    
+
                 $headers = array(
                     'Authorization: key=AAAABAbSFZE:APA91bFbaD0aAG-aoYadiJ41qzwenSFU2RnXF3wcFZ63Lx2rPxywCpp8KGlWVG8nL-pEAbxCaFcHxO_jjciWIlT0-9Y8Q5yKuJvy1YItJPR7b1jl1vy_FugPF_3Zpw5lX-Tn9QtqWpgH',
                     'Content-type: Application/json'
